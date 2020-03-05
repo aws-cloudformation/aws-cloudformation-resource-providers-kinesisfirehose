@@ -8,6 +8,9 @@ Parameters:
   GitHubRepositoryShortName:
     Type: String
     Description: Short Name for this provider to avoid exceeding the 64char limit on IAM Resources
+  CFNSDKBucket:
+    Type: String
+    Description: S3 Location of CloudFormation SDK; should be removed when we can publish the latest client
 
 Resources:
   AWSCloudFormationResourceProviderCIPolicy:
@@ -26,6 +29,16 @@ Resources:
             Resource:
               - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${GitHubRepositoryName}-ci"
               - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${GitHubRepositoryName}-ci:*"
+	  - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:GetObjectVersion
+            Resource: !Sub "${CFNSDKBucket}/*"
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource: !Ref CFNSDKBucket
 
   AWSCloudFormationResourceProviderCIRole:
     Type: AWS::IAM::Role
@@ -65,6 +78,31 @@ Resources:
         ReportBuildStatus: true
         GitCloneDepth: 1
         BuildSpec: buildspec.yml
+      SecondarySources:
+          - Type: GITHUB
+            Auth:
+              Type: OAUTH
+            Location: https://github.com/aws-cloudformation/aws-cloudformation-resource-schema.git
+            ReportBuildStatus: false
+            GitCloneDepth: 1
+            SourceIdentifier: SCHEMA
+          - Type: GITHUB
+            Auth:
+              Type: OAUTH
+            Location: https://github.com/aws-cloudformation/aws-cloudformation-rpdk.git
+            ReportBuildStatus: false
+            GitCloneDepth: 1
+            SourceIdentifier: RPDK
+          - Type: GITHUB
+            Auth:
+              Type: OAUTH
+            Location: https://github.com/aws-cloudformation/aws-cloudformation-rpdk-java-plugin.git
+            ReportBuildStatus: false
+            GitCloneDepth: 1
+            SourceIdentifier: JAVA_PLUGIN
+          - Type: S3
+            Location: !Sub "${CFNSDKBucket}/"
+            SourceIdentifier: SDK
       ServiceRole: !GetAtt AWSCloudFormationResourceProviderCIRole.Arn
       Triggers:
         Webhook: true
