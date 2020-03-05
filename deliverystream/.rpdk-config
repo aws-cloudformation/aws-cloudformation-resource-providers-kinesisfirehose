@@ -1,0 +1,15 @@
+{
+    "typeName": "AWS::KinesisFirehose::DeliveryStream",
+    "language": "java",
+    "runtime": "java8",
+    "entrypoint": "com.amazonaws.kinesisfirehose.deliverystream.HandlerWrapper::handleRequest",
+    "testEntrypoint": "com.amazonaws.kinesisfirehose.deliverystream.HandlerWrapper::testEntrypoint",
+    "settings": {
+        "namespace": [
+            "com",
+            "amazonaws",
+            "kinesisfirehose",
+            "deliverystream"
+        ]
+    }
+}
