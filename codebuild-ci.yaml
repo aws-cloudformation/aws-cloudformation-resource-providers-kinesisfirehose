@@ -29,7 +29,7 @@ Resources:
             Resource:
               - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${GitHubRepositoryName}-ci"
               - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${GitHubRepositoryName}-ci:*"
-	  - Effect: Allow
+          - Effect: Allow
             Action:
               - s3:PutObject
               - s3:GetObject
