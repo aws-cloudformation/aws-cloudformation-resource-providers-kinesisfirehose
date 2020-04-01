@@ -27,6 +27,12 @@ Resources:
                 - "firehose:DescribeDeliveryStream"
                 - "firehose:UpdateDestination"
                 - "firehose:DeleteDeliveryStream"
+                - "firehose:ListDeliveryStreams"
+                - "firehose:StartDeliveryStreamEncryption"
+                - "firehose:StopDeliveryStreamEncryption"
+                - "firehose:TagDeliveryStream"
+                - "firehose:UntagDeliveryStream"
+                - "firehose:ListTagsForDeliveryStream"
                 Resource: "*"
 Outputs:
   ExecutionRoleArn:

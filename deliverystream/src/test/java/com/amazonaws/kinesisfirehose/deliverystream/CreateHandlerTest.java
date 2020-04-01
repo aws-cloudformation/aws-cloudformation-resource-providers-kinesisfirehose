@@ -24,6 +24,7 @@ import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.NUMBER_
 import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.TIMED_OUT_MESSAGE;
 import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,8 +64,8 @@ public class CreateHandlerTest {
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
                 any())).thenThrow(ResourceNotFoundException.builder().build())
                        .thenReturn(describeResponse);
-        when(proxy.injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
-                any())).thenReturn(createResponse);
+        doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
+                any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -108,8 +109,8 @@ public class CreateHandlerTest {
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
                 any())).thenThrow(ResourceNotFoundException.builder().build())
                 .thenReturn(describeResponse);
-        when(proxy.injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
-                any())).thenReturn(createResponse);
+        doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
+                any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -153,8 +154,8 @@ public class CreateHandlerTest {
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
                 any())).thenThrow(ResourceNotFoundException.builder().build())
                 .thenReturn(describeResponse);
-        when(proxy.injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
-                any())).thenReturn(createResponse);
+        doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
+                any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -198,8 +199,8 @@ public class CreateHandlerTest {
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
                 any())).thenThrow(ResourceNotFoundException.builder().build())
                 .thenReturn(describeResponse);
-        when(proxy.injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
-                any())).thenReturn(createResponse);
+        doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
+                any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -244,8 +245,8 @@ public class CreateHandlerTest {
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
                 any())).thenThrow(ResourceNotFoundException.builder().build())
                 .thenReturn(describeResponse);
-        when(proxy.injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
-                any())).thenReturn(createResponse);
+        doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
+                any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)

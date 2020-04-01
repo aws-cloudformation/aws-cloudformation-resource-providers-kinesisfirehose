@@ -601,6 +601,11 @@
       "permissions": [
         "firehose:DeleteDeliveryStream"
       ]
+    },
+    "list": {
+      "permissions": [
+        "firehose:ListDeliveryStreams"
+      ]
     }
   },
   "readOnlyProperties": [
