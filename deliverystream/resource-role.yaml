@@ -24,15 +24,12 @@ Resources:
               - Effect: Allow
                 Action:
                 - "firehose:CreateDeliveryStream"
-                - "firehose:DescribeDeliveryStream"
-                - "firehose:UpdateDestination"
                 - "firehose:DeleteDeliveryStream"
+                - "firehose:DescribeDeliveryStream"
                 - "firehose:ListDeliveryStreams"
-                - "firehose:StartDeliveryStreamEncryption"
-                - "firehose:StopDeliveryStreamEncryption"
-                - "firehose:TagDeliveryStream"
-                - "firehose:UntagDeliveryStream"
-                - "firehose:ListTagsForDeliveryStream"
+                - "firehose:UpdateDestination"
+                - "iam:GetRole"
+                - "iam:PassRole"
                 Resource: "*"
 Outputs:
   ExecutionRoleArn:
