@@ -584,7 +584,10 @@
   "handlers": {
     "create": {
       "permissions": [
-        "firehose:CreateDeliveryStream"
+        "firehose:CreateDeliveryStream",
+        "firehose:DescribeDeliveryStream",
+        "iam:GetRole",
+        "iam:PassRole"
       ]
     },
     "read": {
@@ -594,12 +597,14 @@
     },
     "update": {
       "permissions": [
-        "firehose:UpdateDestination"
+        "firehose:UpdateDestination",
+        "firehose:DescribeDeliveryStream"
       ]
     },
     "delete": {
       "permissions": [
-        "firehose:DeleteDeliveryStream"
+        "firehose:DeleteDeliveryStream",
+        "firehose:DescribeDeliveryStream"
       ]
     },
     "list": {

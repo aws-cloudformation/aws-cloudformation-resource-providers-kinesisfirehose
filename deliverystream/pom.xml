@@ -171,6 +171,13 @@
                         <exclude>**/BaseHandler*</exclude>
                         <exclude>**/HandlerWrapper*</exclude>
                         <exclude>**/ResourceModel*</exclude>
+                        <exclude>**/CallbackContext*</exclude>
+                        <exclude>**/HandlerUtils*</exclude>
+                        <exclude>**/ExceptionMapper*</exclude>
+                        <exclude>**/UpdateHandler*</exclude>
+                        <exclude>**/ReadHandler*</exclude>
+                        <exclude>**/ListHandler*</exclude>
+                        <exclude>**/DeleteHandler*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
