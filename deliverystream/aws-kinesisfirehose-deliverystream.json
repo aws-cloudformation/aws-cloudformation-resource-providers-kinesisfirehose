@@ -244,6 +244,9 @@
         },
         "ClusterEndpoint": {
           "type": "string"
+        },
+        "TypeName": {
+          "type": "string"
         }
       },
       "required": [
