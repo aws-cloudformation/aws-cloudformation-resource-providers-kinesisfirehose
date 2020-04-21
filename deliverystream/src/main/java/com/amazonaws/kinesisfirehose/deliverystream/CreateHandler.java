@@ -33,6 +33,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         final ResourceModel model = request.getDesiredResourceState();
         clientProxy = proxy;
 
+        logger.log(String.format("Create Handler called with deliveryStreamName %s", model.getDeliveryStreamName()));
         final CallbackContext currentContext = callbackContext == null
                 ? CallbackContext.builder()
                 .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
@@ -56,11 +57,13 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         }
 
         // This Lambda will continually be re-invoked with the current state of the instance, finally succeeding when state stabilizes.
-        return createDeliveryStreamAndUpdateProgress(model, currentContext);
+        return createDeliveryStreamAndUpdateProgress(model, currentContext, logger);
     }
 
 
-    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStreamAndUpdateProgress(ResourceModel model, CallbackContext callbackContext) {
+    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStreamAndUpdateProgress(ResourceModel model,
+                                                                                                CallbackContext callbackContext,
+                                                                                                final Logger logger) {
         val deliveryStreamStatus = callbackContext.getDeliveryStreamStatus();
 
         if (callbackContext.getStabilizationRetriesRemaining() == 0) {
@@ -71,6 +74,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
             try {
                 return createDeliveryStream(model);
             } catch (final Exception e) {
+                logger.log(String.format("createDeliveryStream failed with exception %s", e.getMessage()));
                 return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
             }
         } else if (deliveryStreamStatus.equals(DeliveryStreamStatus.ACTIVE.toString())) {

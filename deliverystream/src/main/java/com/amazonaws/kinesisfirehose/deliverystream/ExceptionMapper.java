@@ -27,10 +27,10 @@ public final class ExceptionMapper {
 			return HandlerErrorCode.InvalidRequest;
 		} else if (exception instanceof LimitExceededException) {
 			return HandlerErrorCode.ServiceLimitExceeded;
-		} else if (exception instanceof FirehoseException) {
-			return HandlerErrorCode.ServiceInternalError;
 		} else if (exception instanceof ResourceNotFoundException) {
 			return HandlerErrorCode.NotFound;
+		} else if (exception instanceof FirehoseException) {
+			return HandlerErrorCode.ServiceInternalError;
 		} else {
 			return HandlerErrorCode.InternalFailure;
 		}
