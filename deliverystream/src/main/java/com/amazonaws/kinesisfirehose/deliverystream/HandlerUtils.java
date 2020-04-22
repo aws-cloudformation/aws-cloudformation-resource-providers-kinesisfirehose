@@ -641,150 +641,171 @@ class HandlerUtils {
 				.build();
 	}
 
-	static S3DestinationConfiguration translateS3DestinationConfiguration(final S3DestinationDescription s3DestinationDescription) {
+	static S3DestinationConfiguration translateS3DestinationConfigurationToCfnModel(final S3DestinationDescription s3DestinationDescription) {
 		return s3DestinationDescription == null ? null : S3DestinationConfiguration.builder()
 				.bucketARN(s3DestinationDescription.bucketARN())
-				.bufferingHints(translateBufferingHints(s3DestinationDescription.bufferingHints()))
-				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(s3DestinationDescription.cloudWatchLoggingOptions()))
+				.bufferingHints(translateBufferingHintsToCfnModel(s3DestinationDescription.bufferingHints()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptionsToCfnModel(s3DestinationDescription.cloudWatchLoggingOptions()))
 				.compressionFormat(s3DestinationDescription.compressionFormatAsString())
-				.encryptionConfiguration(translateEncryptionConfiguration(s3DestinationDescription.encryptionConfiguration()))
+				.encryptionConfiguration(translateEncryptionConfigurationToCfnModel(s3DestinationDescription.encryptionConfiguration()))
 				.errorOutputPrefix(s3DestinationDescription.errorOutputPrefix())
 				.prefix(s3DestinationDescription.prefix())
 				.roleARN(s3DestinationDescription.roleARN())
 				.build();
 	}
 
-	static ExtendedS3DestinationConfiguration translateExtendedS3DestinationConfiguration(
+	static ExtendedS3DestinationConfiguration translateExtendedS3DestinationConfigurationToCfnModel(
 			final ExtendedS3DestinationDescription extendedS3DestinationDescription) {
 		return extendedS3DestinationDescription == null ? null : ExtendedS3DestinationConfiguration.builder()
 				.bucketARN(extendedS3DestinationDescription.bucketARN())
-				.bufferingHints(translateBufferingHints(extendedS3DestinationDescription.bufferingHints()))
-				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(extendedS3DestinationDescription.cloudWatchLoggingOptions()))
+				.bufferingHints(translateBufferingHintsToCfnModel(extendedS3DestinationDescription.bufferingHints()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptionsToCfnModel(extendedS3DestinationDescription.cloudWatchLoggingOptions()))
 				.compressionFormat(extendedS3DestinationDescription.compressionFormatAsString())
-				.dataFormatConversionConfiguration(translateDataFormatConversionConfiguration(extendedS3DestinationDescription.dataFormatConversionConfiguration()))
-				.encryptionConfiguration(translateEncryptionConfiguration(extendedS3DestinationDescription.encryptionConfiguration()))
+				.dataFormatConversionConfiguration(translateDataFormatConversionConfigurationToCfnModel(extendedS3DestinationDescription.dataFormatConversionConfiguration()))
+				.encryptionConfiguration(translateEncryptionConfigurationToCfnModel(extendedS3DestinationDescription.encryptionConfiguration()))
 				.errorOutputPrefix(extendedS3DestinationDescription.errorOutputPrefix())
 				.prefix(extendedS3DestinationDescription.prefix())
-				.processingConfiguration(translateProcessingConfiguration(extendedS3DestinationDescription.processingConfiguration()))
+				.processingConfiguration(translateProcessingConfigurationToCfnModel(extendedS3DestinationDescription.processingConfiguration()))
 				.roleARN(extendedS3DestinationDescription.roleARN())
-				.s3BackupConfiguration(translateS3DestinationConfiguration(extendedS3DestinationDescription.s3BackupDescription()))
+				.s3BackupConfiguration(translateS3DestinationConfigurationToCfnModel(extendedS3DestinationDescription.s3BackupDescription()))
 				.s3BackupMode(extendedS3DestinationDescription.s3BackupModeAsString())
 				.build();
 	}
 
-	static RedshiftDestinationConfiguration translateRedshiftDestination(final RedshiftDestinationDescription redshiftDestinationDescription) {
+	static RedshiftDestinationConfiguration translateRedshiftDestinationToCfnModel(final RedshiftDestinationDescription redshiftDestinationDescription) {
 		return redshiftDestinationDescription == null ? null : RedshiftDestinationConfiguration.builder()
-				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(redshiftDestinationDescription.cloudWatchLoggingOptions()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptionsToCfnModel(redshiftDestinationDescription.cloudWatchLoggingOptions()))
 				.clusterJDBCURL(redshiftDestinationDescription.clusterJDBCURL())
 				.copyCommand(CopyCommand.builder()
 						.copyOptions(redshiftDestinationDescription.copyCommand().copyOptions())
 						.dataTableColumns(redshiftDestinationDescription.copyCommand().dataTableColumns())
 						.dataTableName(redshiftDestinationDescription.copyCommand().dataTableName())
 						.build())
-				.s3Configuration(translateS3DestinationConfiguration(redshiftDestinationDescription.s3DestinationDescription()))
-				.processingConfiguration(translateProcessingConfiguration(redshiftDestinationDescription.processingConfiguration()))
+				.s3Configuration(translateS3DestinationConfigurationToCfnModel(redshiftDestinationDescription.s3DestinationDescription()))
+				.processingConfiguration(translateProcessingConfigurationToCfnModel(redshiftDestinationDescription.processingConfiguration()))
 				.roleARN(redshiftDestinationDescription.roleARN())
 				.username(redshiftDestinationDescription.username())
 				.build();
 	}
 
-	static ElasticsearchDestinationConfiguration translateElasticsearchDestinationConfiguration(
+	static ElasticsearchDestinationConfiguration translateElasticsearchDestinationConfigurationToCfnModel(
 			final ElasticsearchDestinationDescription elasticsearchDestinationDescription) {
 		return elasticsearchDestinationDescription == null ? null : ElasticsearchDestinationConfiguration.builder()
 				.bufferingHints(elasticsearchDestinationDescription.bufferingHints() == null ? null : ElasticsearchBufferingHints.builder()
 						.intervalInSeconds(elasticsearchDestinationDescription.bufferingHints().intervalInSeconds())
 						.sizeInMBs(elasticsearchDestinationDescription.bufferingHints().sizeInMBs())
 						.build())
-				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(elasticsearchDestinationDescription.cloudWatchLoggingOptions()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptionsToCfnModel(elasticsearchDestinationDescription.cloudWatchLoggingOptions()))
 				.clusterEndpoint(elasticsearchDestinationDescription.clusterEndpoint())
 				.domainARN(elasticsearchDestinationDescription.domainARN())
 				.indexName(elasticsearchDestinationDescription.indexName())
 				.indexRotationPeriod(elasticsearchDestinationDescription.indexRotationPeriodAsString())
-				.processingConfiguration(translateProcessingConfiguration(elasticsearchDestinationDescription.processingConfiguration()))
+				.processingConfiguration(translateProcessingConfigurationToCfnModel(elasticsearchDestinationDescription.processingConfiguration()))
 				.retryOptions(elasticsearchDestinationDescription.retryOptions() == null ? null : ElasticsearchRetryOptions.builder()
 						.durationInSeconds(elasticsearchDestinationDescription.retryOptions().durationInSeconds())
 						.build())
 				.roleARN(elasticsearchDestinationDescription.roleARN())
 				.s3BackupMode(elasticsearchDestinationDescription.s3BackupModeAsString())
-				.s3Configuration(translateS3DestinationConfiguration(elasticsearchDestinationDescription.s3DestinationDescription()))
+				.s3Configuration(translateS3DestinationConfigurationToCfnModel(elasticsearchDestinationDescription.s3DestinationDescription()))
 				.typeName(elasticsearchDestinationDescription.typeName())
 				.build();
 	}
 
-	static SplunkDestinationConfiguration translateSplunkDestinationConfiguration(final SplunkDestinationDescription splunkDestinationDescription) {
+	static SplunkDestinationConfiguration translateSplunkDestinationConfigurationToCfnModel(final SplunkDestinationDescription splunkDestinationDescription) {
 		return splunkDestinationDescription == null ? null : SplunkDestinationConfiguration.builder()
-				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(splunkDestinationDescription.cloudWatchLoggingOptions()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptionsToCfnModel(splunkDestinationDescription.cloudWatchLoggingOptions()))
 				.hECAcknowledgmentTimeoutInSeconds(splunkDestinationDescription.hecAcknowledgmentTimeoutInSeconds())
 				.hECEndpoint(splunkDestinationDescription.hecEndpoint())
 				.hECEndpointType(splunkDestinationDescription.hecEndpointTypeAsString())
 				.hECToken(splunkDestinationDescription.hecToken())
-				.processingConfiguration(translateProcessingConfiguration(splunkDestinationDescription.processingConfiguration()))
+				.processingConfiguration(translateProcessingConfigurationToCfnModel(splunkDestinationDescription.processingConfiguration()))
 				.retryOptions(splunkDestinationDescription.retryOptions() == null ? null : SplunkRetryOptions.builder()
 						.durationInSeconds(splunkDestinationDescription.retryOptions().durationInSeconds())
 						.build())
 				.s3BackupMode(splunkDestinationDescription.s3BackupModeAsString())
-				.s3Configuration(translateS3DestinationConfiguration(splunkDestinationDescription.s3DestinationDescription()))
+				.s3Configuration(translateS3DestinationConfigurationToCfnModel(splunkDestinationDescription.s3DestinationDescription()))
 				.build();
 	}
 
-	static DataFormatConversionConfiguration translateDataFormatConversionConfiguration(
+	static DataFormatConversionConfiguration translateDataFormatConversionConfigurationToCfnModel(
 			final software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration dataFormatConversionConfiguration) {
 		if (dataFormatConversionConfiguration == null) {
 			return null;
 		}
-		val deserializer = dataFormatConversionConfiguration.inputFormatConfiguration().deserializer();
-		val serializer = dataFormatConversionConfiguration.outputFormatConfiguration().serializer();
 		return DataFormatConversionConfiguration.builder()
 				.enabled(dataFormatConversionConfiguration.enabled())
-				.inputFormatConfiguration(InputFormatConfiguration.builder()
-						.deserializer(Deserializer.builder().
-								openXJsonSerDe(deserializer.openXJsonSerDe() == null ? null
-										:OpenXJsonSerDe.builder()
-												.caseInsensitive(deserializer.openXJsonSerDe().caseInsensitive())
-												.columnToJsonKeyMappings(deserializer.openXJsonSerDe().columnToJsonKeyMappings())
-												.convertDotsInJsonKeysToUnderscores(deserializer.openXJsonSerDe().convertDotsInJsonKeysToUnderscores()).build())
-								.hiveJsonSerDe(deserializer.hiveJsonSerDe() == null ? null
-										: HiveJsonSerDe.builder().timestampFormats(deserializer.hiveJsonSerDe().timestampFormats()).build())
-								.build())
-						.build())
-				.outputFormatConfiguration(OutputFormatConfiguration.builder()
-						.serializer(Serializer.builder()
-								.parquetSerDe(serializer.parquetSerDe() == null ? null
-								    : ParquetSerDe.builder()
-										.blockSizeBytes(serializer.parquetSerDe().blockSizeBytes())
-										.compression(serializer.parquetSerDe().compressionAsString())
-										.enableDictionaryCompression(serializer.parquetSerDe().enableDictionaryCompression())
-										.maxPaddingBytes(serializer.parquetSerDe().maxPaddingBytes())
-										.pageSizeBytes(serializer.parquetSerDe().pageSizeBytes())
-										.writerVersion(serializer.parquetSerDe().writerVersionAsString())
-										.build())
-								.orcSerDe(serializer.orcSerDe() == null ? null
-								    : OrcSerDe.builder()
-										.blockSizeBytes(serializer.orcSerDe().blockSizeBytes())
-										.bloomFilterColumns(serializer.orcSerDe().bloomFilterColumns())
-										.bloomFilterFalsePositiveProbability(serializer.orcSerDe().bloomFilterFalsePositiveProbability())
-										.compression(serializer.orcSerDe().compressionAsString())
-										.dictionaryKeyThreshold(serializer.orcSerDe().dictionaryKeyThreshold())
-										.enablePadding(serializer.orcSerDe().enablePadding())
-										.formatVersion(serializer.orcSerDe().formatVersionAsString())
-										.paddingTolerance(serializer.orcSerDe().paddingTolerance())
-										.rowIndexStride(serializer.orcSerDe().rowIndexStride())
-										.stripeSizeBytes(serializer.orcSerDe().stripeSizeBytes())
-										.build())
-								.build())
-						.build())
-				.schemaConfiguration(SchemaConfiguration.builder()
-						.catalogId(dataFormatConversionConfiguration.schemaConfiguration().catalogId())
-						.databaseName(dataFormatConversionConfiguration.schemaConfiguration().databaseName())
-						.region(dataFormatConversionConfiguration.schemaConfiguration().region())
-						.roleARN(dataFormatConversionConfiguration.schemaConfiguration().roleARN())
-						.tableName(dataFormatConversionConfiguration.schemaConfiguration().tableName())
-						.versionId(dataFormatConversionConfiguration.schemaConfiguration().versionId())
+				.inputFormatConfiguration(translateInputFormatConfigurationToCfnModel(dataFormatConversionConfiguration.inputFormatConfiguration()))
+				.outputFormatConfiguration(translateOutputFormatConfigurationToCfnModel(dataFormatConversionConfiguration.outputFormatConfiguration()))
+				.schemaConfiguration(translateSchemaConfigurationToCfnModel(dataFormatConversionConfiguration.schemaConfiguration()))
+				.build();
+	}
+
+	static SchemaConfiguration translateSchemaConfigurationToCfnModel(
+			software.amazon.awssdk.services.firehose.model.SchemaConfiguration schemaConfiguration) {
+		return schemaConfiguration == null ? null : SchemaConfiguration.builder()
+				.catalogId(schemaConfiguration.catalogId())
+				.databaseName(schemaConfiguration.databaseName())
+				.region(schemaConfiguration.region())
+				.roleARN(schemaConfiguration.roleARN())
+				.tableName(schemaConfiguration.tableName())
+				.versionId(schemaConfiguration.versionId())
+				.build();
+	}
+
+	static OutputFormatConfiguration translateOutputFormatConfigurationToCfnModel(
+			software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration outputFormatConfiguration) {
+		if (outputFormatConfiguration == null) {
+			return null;
+		}
+		val serializer = outputFormatConfiguration.serializer();
+		return OutputFormatConfiguration.builder()
+				.serializer(Serializer.builder()
+						.parquetSerDe(serializer.parquetSerDe() == null ? null
+								: ParquetSerDe.builder()
+								        .blockSizeBytes(serializer.parquetSerDe().blockSizeBytes())
+								        .compression(serializer.parquetSerDe().compressionAsString())
+								        .enableDictionaryCompression(serializer.parquetSerDe().enableDictionaryCompression())
+								        .maxPaddingBytes(serializer.parquetSerDe().maxPaddingBytes())
+								        .pageSizeBytes(serializer.parquetSerDe().pageSizeBytes())
+								        .writerVersion(serializer.parquetSerDe().writerVersionAsString())
+								        .build())
+						.orcSerDe(serializer.orcSerDe() == null ? null
+								: OrcSerDe.builder()
+								        .blockSizeBytes(serializer.orcSerDe().blockSizeBytes())
+								        .bloomFilterColumns(serializer.orcSerDe().bloomFilterColumns())
+								        .bloomFilterFalsePositiveProbability(serializer.orcSerDe().bloomFilterFalsePositiveProbability())
+								        .compression(serializer.orcSerDe().compressionAsString())
+								        .dictionaryKeyThreshold(serializer.orcSerDe().dictionaryKeyThreshold())
+								        .enablePadding(serializer.orcSerDe().enablePadding())
+								        .formatVersion(serializer.orcSerDe().formatVersionAsString())
+								        .paddingTolerance(serializer.orcSerDe().paddingTolerance())
+								        .rowIndexStride(serializer.orcSerDe().rowIndexStride())
+								        .stripeSizeBytes(serializer.orcSerDe().stripeSizeBytes())
+								        .build())
 						.build())
 				.build();
 	}
 
-	static ProcessingConfiguration translateProcessingConfiguration(
+	static InputFormatConfiguration translateInputFormatConfigurationToCfnModel(
+			software.amazon.awssdk.services.firehose.model.InputFormatConfiguration inputFormatConfiguration) {
+		if (inputFormatConfiguration == null) {
+			return null;
+		}
+		val deserializer = inputFormatConfiguration.deserializer();
+		return InputFormatConfiguration.builder()
+				.deserializer(Deserializer.builder().
+						openXJsonSerDe(deserializer.openXJsonSerDe() == null ? null
+								:OpenXJsonSerDe.builder()
+								.caseInsensitive(deserializer.openXJsonSerDe().caseInsensitive())
+								.columnToJsonKeyMappings(deserializer.openXJsonSerDe().columnToJsonKeyMappings())
+								.convertDotsInJsonKeysToUnderscores(deserializer.openXJsonSerDe().convertDotsInJsonKeysToUnderscores()).build())
+						.hiveJsonSerDe(deserializer.hiveJsonSerDe() == null ? null
+								: HiveJsonSerDe.builder().timestampFormats(deserializer.hiveJsonSerDe().timestampFormats()).build())
+						.build())
+				.build();
+	}
+
+	static ProcessingConfiguration translateProcessingConfigurationToCfnModel(
 			final software.amazon.awssdk.services.firehose.model.ProcessingConfiguration processingConfiguration) {
 		return processingConfiguration == null ? null : ProcessingConfiguration.builder()
 				.enabled(processingConfiguration.enabled())
@@ -804,7 +825,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	static EncryptionConfiguration translateEncryptionConfiguration(
+	static EncryptionConfiguration translateEncryptionConfigurationToCfnModel(
 			final software.amazon.awssdk.services.firehose.model.EncryptionConfiguration encryptionConfiguration) {
 		return encryptionConfiguration == null ? null : EncryptionConfiguration.builder()
 				.kMSEncryptionConfig(encryptionConfiguration.kmsEncryptionConfig() != null ? KMSEncryptionConfig.builder()
@@ -813,7 +834,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	static CloudWatchLoggingOptions translateCloudWatchLoggingOptions(
+	static CloudWatchLoggingOptions translateCloudWatchLoggingOptionsToCfnModel(
 			final software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions cloudWatchLoggingOptions) {
 		return cloudWatchLoggingOptions == null ? null : CloudWatchLoggingOptions.builder()
 				.enabled(cloudWatchLoggingOptions.enabled())
@@ -822,14 +843,14 @@ class HandlerUtils {
 				.build();
 	}
 
-	static BufferingHints translateBufferingHints(final software.amazon.awssdk.services.firehose.model.BufferingHints bufferingHints) {
+	static BufferingHints translateBufferingHintsToCfnModel(final software.amazon.awssdk.services.firehose.model.BufferingHints bufferingHints) {
 		return bufferingHints == null ? null : BufferingHints.builder()
 				.intervalInSeconds(bufferingHints.intervalInSeconds())
 				.sizeInMBs(bufferingHints.sizeInMBs())
 				.build();
 	}
 
-	static KinesisStreamSourceConfiguration translateKinesisStreamSourceConfiguration(
+	static KinesisStreamSourceConfiguration translateKinesisStreamSourceConfigurationToCfnModel(
 			final SourceDescription sourceDescription) {
 		if (sourceDescription == null) {
 			return null;

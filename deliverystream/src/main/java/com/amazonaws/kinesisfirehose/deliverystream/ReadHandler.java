@@ -1,17 +1,17 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
-import java.util.Optional;
-import lombok.val;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
-import software.amazon.awssdk.services.firehose.model.*;
-import software.amazon.cloudformation.exceptions.CfnGeneralServiceException;
+
+import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
+import software.amazon.awssdk.services.firehose.model.DestinationDescription;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
-import software.amazon.cloudformation.proxy.OperationStatus;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 
 import java.util.List;
+
+import lombok.val;
 
 public class ReadHandler extends BaseHandler<CallbackContext> {
 
@@ -26,54 +26,47 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
 
         clientProxy = proxy;
         final ResourceModel model = request.getDesiredResourceState();
+        logger.log(String.format("Read Handler called with id %s.", model.getId()));
+
         model.setDeliveryStreamName(model.getId());
-        val returnModel = describeDeliveryStreamRequest(model);
-        if (returnModel.isPresent()) {
-            return ProgressEvent.<ResourceModel, CallbackContext>builder()
-                    .resourceModel(returnModel.get())
-                    .status(OperationStatus.SUCCESS)
-                    .build();
-        } else {
-            return ProgressEvent.<ResourceModel, CallbackContext>builder()
-                    .status(OperationStatus.FAILED)
-                    .build();
+        try {
+            val returnModel = describeDeliveryStreamRequest(model);
+            return ProgressEvent.defaultSuccessHandler(returnModel);
+        } catch (Exception e) {
+            logger.log(String.format("Got exception for %s, error message %s",
+                model.getId(),
+                e.getMessage()));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
         }
     }
 
-    private Optional<ResourceModel> describeDeliveryStreamRequest(ResourceModel model) {
+    private ResourceModel describeDeliveryStreamRequest(ResourceModel model) {
         val req = DescribeDeliveryStreamRequest.builder()
                 .deliveryStreamName(model.getDeliveryStreamName())
                 .build();
-        try {
-            val des =  clientProxy.injectCredentialsAndInvokeV2(req,
-                    firehoseClient::describeDeliveryStream)
-                    .deliveryStreamDescription();
-            model.setArn(des.deliveryStreamARN());
-            model.setId(des.deliveryStreamName());
-            model.setKinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfiguration(des.source()));
-            model.setDeliveryStreamType(des.deliveryStreamStatusAsString());
-            return Optional.of(setDestination(model, des.destinations()));
-        } catch (ResourceNotFoundException e) {
-            return Optional.empty();
-        } catch (FirehoseException e) {
-            throw new CfnGeneralServiceException(e.getMessage());
-        }
+        val des =  clientProxy.injectCredentialsAndInvokeV2(req,
+                firehoseClient::describeDeliveryStream)
+                .deliveryStreamDescription();
+        model.setArn(des.deliveryStreamARN());
+        model.setId(des.deliveryStreamName());
+        model.setKinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfigurationToCfnModel(des.source()));
+        model.setDeliveryStreamType(des.deliveryStreamStatusAsString());
+        return setDestinationDescription(model, des.destinations());
     }
 
-    private ResourceModel setDestination(ResourceModel model, List<DestinationDescription> descriptions) {
+    private ResourceModel setDestinationDescription(ResourceModel model, List<DestinationDescription> descriptions) {
         descriptions.stream().forEach(destination -> {
             model.setS3DestinationConfiguration(
-                    HandlerUtils.translateS3DestinationConfiguration(destination.s3DestinationDescription()));
+                    HandlerUtils.translateS3DestinationConfigurationToCfnModel(destination.s3DestinationDescription()));
             model.setExtendedS3DestinationConfiguration(
-                    HandlerUtils.translateExtendedS3DestinationConfiguration(destination.extendedS3DestinationDescription()));
+                    HandlerUtils.translateExtendedS3DestinationConfigurationToCfnModel(destination.extendedS3DestinationDescription()));
             model.setRedshiftDestinationConfiguration(
-                    HandlerUtils.translateRedshiftDestination(destination.redshiftDestinationDescription()));
+                    HandlerUtils.translateRedshiftDestinationToCfnModel(destination.redshiftDestinationDescription()));
             model.setElasticsearchDestinationConfiguration(
-                    HandlerUtils.translateElasticsearchDestinationConfiguration(destination.elasticsearchDestinationDescription()));
+                    HandlerUtils.translateElasticsearchDestinationConfigurationToCfnModel(destination.elasticsearchDestinationDescription()));
             model.setSplunkDestinationConfiguration(
-                    HandlerUtils.translateSplunkDestinationConfiguration(destination.splunkDestinationDescription()));
+                    HandlerUtils.translateSplunkDestinationConfigurationToCfnModel(destination.splunkDestinationDescription()));
         });
         return model;
     }
-
 }

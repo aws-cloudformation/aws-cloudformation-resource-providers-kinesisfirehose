@@ -4,27 +4,16 @@ import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHel
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import software.amazon.awssdk.services.firehose.model.*;
-import software.amazon.awssdk.services.firehose.model.BufferingHints;
-import software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions;
-import software.amazon.awssdk.services.firehose.model.CopyCommand;
-import software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration;
-import software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints;
-import software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions;
-import software.amazon.awssdk.services.firehose.model.HiveJsonSerDe;
-import software.amazon.awssdk.services.firehose.model.OpenXJsonSerDe;
-import software.amazon.awssdk.services.firehose.model.ProcessingConfiguration;
-import software.amazon.awssdk.services.firehose.model.Processor;
-import software.amazon.awssdk.services.firehose.model.ProcessorParameter;
-import software.amazon.awssdk.services.firehose.model.SchemaConfiguration;
-import software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration;
-import software.amazon.awssdk.services.firehose.model.InputFormatConfiguration;
-import software.amazon.awssdk.services.firehose.model.Deserializer;
-import software.amazon.awssdk.services.firehose.model.Serializer;
-import software.amazon.awssdk.services.firehose.model.EncryptionConfiguration;
-import software.amazon.awssdk.services.firehose.model.OrcSerDe;
-import software.amazon.awssdk.services.firehose.model.ParquetSerDe;
-import software.amazon.awssdk.services.firehose.model.SplunkRetryOptions;
+
+import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
+import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
+import software.amazon.awssdk.services.firehose.model.DestinationDescription;
+import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
+import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
+import software.amazon.awssdk.services.firehose.model.SourceDescription;
+import software.amazon.awssdk.services.firehose.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.firehose.model.ProcessorType;
+
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
@@ -46,127 +35,7 @@ import lombok.val;
 
 @ExtendWith(MockitoExtension.class)
 public class ReadHandlerTest {
-    private final static CloudWatchLoggingOptions CLOUDWATCH_LOGGING_OPTIONS =
-            CloudWatchLoggingOptions.builder().enabled(true).logGroupName("LogGroupName").logStreamName("LogStreamName").build();
 
-    private final static KinesisStreamSourceDescription KINESIS_STREAM_SOURCE_DESCRIPTION_RESPONSE = KinesisStreamSourceDescription.builder()
-            .kinesisStreamARN(KINESIS_STREAM_ARN)
-            .roleARN(ROLE_ARN)
-            .build();
-    private final static S3DestinationDescription S_3_DESTINATION_DESCRIPTION_RESPONSE = S3DestinationDescription.builder()
-            .bucketARN(BUCKET_ARN)
-            .bufferingHints(
-                    BufferingHints.builder().intervalInSeconds(INTERVAL_IN_SECONDS).sizeInMBs(SIZE_IN_MBS).build())
-            .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS)
-            .compressionFormat(COMPRESSION_FORMAT)
-            .encryptionConfiguration(EncryptionConfiguration.builder().noEncryptionConfig(NO_ENCRYPTION_CONFIG).build())
-            .errorOutputPrefix(ERROR_OUTPUT_PREFIX)
-            .prefix(PREFIX)
-            .roleARN(ROLE_ARN)
-            .build();
-
-    private final static ProcessingConfiguration PROCESSING_CONFIGURATION = ProcessingConfiguration.builder()
-            .enabled(true)
-            .processors(Processor.builder()
-                    .parameters(ProcessorParameter.builder()
-                            .parameterName("name")
-                            .parameterValue("value")
-                            .build())
-                    .type(ProcessorType.LAMBDA)
-                    .build())
-            .build();
-
-    private final static DataFormatConversionConfiguration DATA_FORMAT_CONVERSION_CONFIGURATION_RESPONSE = DataFormatConversionConfiguration.builder()
-            .schemaConfiguration(SchemaConfiguration.builder()
-                    .versionId("versionId")
-                    .tableName("tableName")
-                    .roleARN(ROLE_ARN)
-                    .region("us-east-1")
-                    .databaseName("databaseName")
-                    .catalogId("catelogId")
-                    .build())
-            .outputFormatConfiguration(OutputFormatConfiguration.builder()
-                    .serializer(Serializer.builder()
-                            .orcSerDe(OrcSerDe.builder()
-                                    .stripeSizeBytes(1)
-                                    .rowIndexStride(1)
-                                    .paddingTolerance(1D)
-                                    .formatVersion("formatVersion")
-                                    .enablePadding(true)
-                                    .dictionaryKeyThreshold(1D)
-                                    .compression(COMPRESSION_FORMAT)
-                                    .bloomFilterFalsePositiveProbability(1D)
-                                    .bloomFilterColumns(ImmutableList.of("bloomFilterColumns"))
-                                    .blockSizeBytes(1)
-                                    .build())
-                            .parquetSerDe(ParquetSerDe.builder()
-                                    .writerVersion("writerVersion")
-                                    .pageSizeBytes(1)
-                                    .maxPaddingBytes(1)
-                                    .enableDictionaryCompression(true)
-                                    .compression(COMPRESSION_FORMAT)
-                                    .blockSizeBytes(1)
-                                    .build())
-                            .build())
-                    .build())
-            .inputFormatConfiguration(InputFormatConfiguration.builder()
-                    .deserializer(Deserializer.builder()
-                            .hiveJsonSerDe(HiveJsonSerDe.builder()
-                                    .timestampFormats("timestampFormats")
-                                    .build())
-                            .openXJsonSerDe(OpenXJsonSerDe.builder()
-                                    .caseInsensitive(true)
-                                    .columnToJsonKeyMappings(ImmutableMap.of("key", "value"))
-                                    .convertDotsInJsonKeysToUnderscores(true)
-                                    .build())
-                            .build())
-                    .build())
-            .enabled(true)
-            .build();
-
-    private final static ExtendedS3DestinationDescription.Builder EXTENDED_S_3_DESTINATION_DESCRIPTION_BUILDER = ExtendedS3DestinationDescription.builder()
-            .s3BackupDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
-            .s3BackupMode(BACKUP_MODE)
-            .bucketARN(BUCKET_ARN)
-            .bufferingHints(BufferingHints.builder().intervalInSeconds(INTERVAL_IN_SECONDS).sizeInMBs(SIZE_IN_MBS).build())
-            .compressionFormat(COMPRESSION_FORMAT)
-            .errorOutputPrefix(ERROR_OUTPUT_PREFIX)
-            .roleARN(ROLE_ARN);
-
-    private final static RedshiftDestinationDescription.Builder REDSHIFT_DESTINATION_DESCRIPTION_BUILDER = RedshiftDestinationDescription.builder()
-            .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
-            .s3BackupDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
-            .clusterJDBCURL("clusterJDBCURL")
-            .copyCommand(CopyCommand.builder().copyOptions("copyOptions").dataTableColumns("dataTableColumns").dataTableName("dataTableName").build())
-            .retryOptions(RedshiftRetryOptions.builder().durationInSeconds(1).build())
-            .roleARN(ROLE_ARN)
-            .s3BackupMode(BACKUP_MODE)
-            .username("username");
-
-    private final static ElasticsearchDestinationDescription.Builder ELASTICSEARCH_DESTINATION_DESCRIPTION_RESPONSE = ElasticsearchDestinationDescription.builder()
-            .bufferingHints(ElasticsearchBufferingHints.builder().intervalInSeconds(INTERVAL_IN_SECONDS).sizeInMBs(SIZE_IN_MBS).build())
-            .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS)
-            .clusterEndpoint(CLUSTER_END_POINT)
-            .domainARN(DOMAIN_ARN)
-            .indexName(INDEX_NAME)
-            .indexRotationPeriod(INDEX_ROTATION_PERIOD)
-            .retryOptions(ElasticsearchRetryOptions.builder().durationInSeconds(1).build())
-            .roleARN(ROLE_ARN)
-            .s3BackupMode(BACKUP_MODE)
-            .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
-            .typeName(TYPE_NAME);
-
-    private final static SplunkDestinationDescription SPLUNK_DESTINATION_DESCRIPTION_RESPONSE = SplunkDestinationDescription.builder()
-            .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS)
-            .hecAcknowledgmentTimeoutInSeconds(1)
-            .hecEndpoint("hecEndpoint")
-            .hecEndpointType("hecEndpointType")
-            .hecToken("hecToken")
-            .processingConfiguration(PROCESSING_CONFIGURATION)
-            .retryOptions(SplunkRetryOptions.builder().durationInSeconds(1).build())
-            .s3BackupMode(BACKUP_MODE)
-            .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
-            .build();
 
     private ReadHandler readHandler;
 
@@ -178,14 +47,12 @@ public class ReadHandlerTest {
 
     @BeforeEach
     public void setup() {
-        logger = mock(Logger.class);
         readHandler = new ReadHandler();
-        System.out.println("Finish read test setup");
     }
 
     @Test
-    public void testReadKinesisStreamAsSource() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+    public void testReadDeliveryStreamWithKinesisStreamAsSource() {
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -213,7 +80,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadExtendedS3DeliveryStream() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -248,7 +115,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadExtendedS3DeliveryStreamWithCloudwatchLoggingAndProcessing() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -261,8 +128,8 @@ public class ReadHandlerTest {
                         .deliveryStreamType(DELIVERY_STREAM_TYPE)
                         .destinations(ImmutableList.of(DestinationDescription.builder()
                                 .extendedS3DestinationDescription(EXTENDED_S_3_DESTINATION_DESCRIPTION_BUILDER
-                                        .processingConfiguration(PROCESSING_CONFIGURATION)
-                                        .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS)
+                                        .processingConfiguration(PROCESSING_CONFIGURATION_RESPONSE)
+                                        .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS_RESPONSE)
                                         .build()).build()))
                         .build())
                 .build();
@@ -289,7 +156,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadRedshiftDestinationConfiguration() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -327,7 +194,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadRedshiftDestinationConfigurationWithProcessingAndCloudwatchLogging() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -340,8 +207,8 @@ public class ReadHandlerTest {
                         .deliveryStreamType(DELIVERY_STREAM_TYPE)
                         .destinations(ImmutableList.of(DestinationDescription.builder()
                                 .redshiftDestinationDescription(REDSHIFT_DESTINATION_DESCRIPTION_BUILDER
-                                        .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS)
-                                        .processingConfiguration(PROCESSING_CONFIGURATION)
+                                        .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS_RESPONSE)
+                                        .processingConfiguration(PROCESSING_CONFIGURATION_RESPONSE)
                                         .build()).build()))
                         .build())
                 .build();
@@ -362,7 +229,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadDataFormatConversion() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -418,7 +285,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadS3DeliveryStream() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -456,7 +323,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadElasticsearchConfiguration() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -497,7 +364,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadElasticsearchConfigurationWithProcessing() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -511,8 +378,8 @@ public class ReadHandlerTest {
                         .source(SourceDescription.builder().kinesisStreamSourceDescription(KINESIS_STREAM_SOURCE_DESCRIPTION_RESPONSE).build())
                         .destinations(ImmutableList.of(DestinationDescription.builder()
                                 .elasticsearchDestinationDescription(ELASTICSEARCH_DESTINATION_DESCRIPTION_RESPONSE
-                                        .processingConfiguration(PROCESSING_CONFIGURATION)
-                                        .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS)
+                                        .processingConfiguration(PROCESSING_CONFIGURATION_RESPONSE)
+                                        .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS_RESPONSE)
                                         .build())
                                 .build()))
                         .build())
@@ -531,7 +398,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadSplunkConfiguration() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -570,7 +437,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testResourceNotFound() {
-        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -592,6 +459,7 @@ public class ReadHandlerTest {
         val response = new ReadHandler().handleRequest(
                 proxy, request, null, logger);
         assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
+
     }
 
     private void validateS3Configuration(com.amazonaws.kinesisfirehose.deliverystream.S3DestinationConfiguration s3DestinationConfiguration) {
