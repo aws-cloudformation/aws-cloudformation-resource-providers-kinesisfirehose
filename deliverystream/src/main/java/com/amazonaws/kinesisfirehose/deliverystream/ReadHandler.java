@@ -26,6 +26,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
 
         clientProxy = proxy;
         final ResourceModel model = request.getDesiredResourceState();
+        model.setDeliveryStreamName(model.getId());
         val returnModel = describeDeliveryStreamRequest(model);
         if (returnModel.isPresent()) {
             return ProgressEvent.<ResourceModel, CallbackContext>builder()
