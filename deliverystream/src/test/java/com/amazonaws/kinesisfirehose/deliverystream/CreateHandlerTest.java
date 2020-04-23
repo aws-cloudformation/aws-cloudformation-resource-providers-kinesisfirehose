@@ -6,10 +6,9 @@ import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
-import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
 import software.amazon.awssdk.services.firehose.model.ResourceNotFoundException;
-import software.amazon.cloudformation.exceptions.CfnResourceConflictException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
+import software.amazon.cloudformation.proxy.HandlerErrorCode;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
 import software.amazon.cloudformation.proxy.ProgressEvent;
@@ -391,11 +390,11 @@ public class CreateHandlerTest {
                 .desiredResourceState(model)
                 .build();
 
-        try {
-            handler.handleRequest(proxy, request, null, logger);
-        } catch (CfnResourceConflictException e) {
-            assertThat(e.getCause()).isInstanceOf(ResourceInUseException.class);
-            verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
-        }
+        final ProgressEvent<ResourceModel, CallbackContext> response =
+                handler.handleRequest(proxy, request, null, logger);
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.ResourceConflict);
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }
 }
