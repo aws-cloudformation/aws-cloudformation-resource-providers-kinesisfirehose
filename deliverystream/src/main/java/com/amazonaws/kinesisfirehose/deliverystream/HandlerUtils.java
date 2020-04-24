@@ -1,9 +1,12 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.amazonaws.util.StringUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import lombok.val;
+import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.*;
+import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -860,5 +863,23 @@ class HandlerUtils {
 				.kinesisStreamARN(kinesisStreamSourceDescription.kinesisStreamARN())
 				.roleARN(kinesisStreamSourceDescription.roleARN())
 				.build();
+	}
+
+	static boolean doesDeliveryStreamExistWithName(ResourceModel model,
+												   AmazonWebServicesClientProxy clientProxy,
+												   final FirehoseClient firehoseClient) {
+		if(StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
+			return false;
+		}
+
+		try {
+			clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
+							.deliveryStreamName(model.getDeliveryStreamName())
+							.build(),
+					firehoseClient::describeDeliveryStream);
+			return true;
+		} catch (ResourceNotFoundException e) {
+			return false;
+		}
 	}
 }

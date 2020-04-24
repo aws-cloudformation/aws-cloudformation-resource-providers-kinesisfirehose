@@ -40,7 +40,8 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .build()
                 : callbackContext;
 
-        if(callbackContext == null && doesDeliveryStreamExistWithName(model)) {
+        if(callbackContext == null && HandlerUtils.doesDeliveryStreamExistWithName(model,
+                clientProxy, firehoseClient)) {
             final Exception e = ResourceInUseException.builder()
                     .message("Firehose already exists with the name: " + model.getDeliveryStreamName())
                     .build();
@@ -77,15 +78,18 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 logger.log(String.format("createDeliveryStream failed with exception %s", e.getMessage()));
                 return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
             }
-        } else if (deliveryStreamStatus.equals(DeliveryStreamStatus.ACTIVE.toString())) {
-            return ProgressEvent.defaultSuccessHandler(model);
         } else {
-            return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                    .deliveryStreamStatus(getDeliveryStreamStatus(model))
-                    .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
-                    .build(),
-                    (int)Duration.ofSeconds(30).getSeconds(),
-                    model);
+            val currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+            if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.ACTIVE.toString())) {
+                return ProgressEvent.defaultSuccessHandler(model);
+            } else {
+                return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
+                                .deliveryStreamStatus(currentDeliveryStreamStatus)
+                                .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
+                                .build(),
+                        (int) Duration.ofSeconds(30).getSeconds(),
+                        model);
+            }
         }
     }
 

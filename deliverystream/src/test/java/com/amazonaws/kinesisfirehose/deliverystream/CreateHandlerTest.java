@@ -87,6 +87,7 @@ public class CreateHandlerTest {
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }
 
     @Test
@@ -132,6 +133,7 @@ public class CreateHandlerTest {
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }
 
     @Test
@@ -177,6 +179,7 @@ public class CreateHandlerTest {
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }
 
     @Test
@@ -222,6 +225,7 @@ public class CreateHandlerTest {
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }
 
     @Test
@@ -268,6 +272,7 @@ public class CreateHandlerTest {
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }
 
     @Test
@@ -323,13 +328,22 @@ public class CreateHandlerTest {
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
 
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+                .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                        .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE)
+                        .build())
+                .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
+                .thenReturn(describeResponse);
+
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
 
         final CallbackContext context = CallbackContext.builder()
                 .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES-1)
-                .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE.toString())
+                .deliveryStreamStatus(DeliveryStreamStatus.CREATING.toString())
                 .build();
 
         final ProgressEvent<ResourceModel, CallbackContext> response
@@ -342,6 +356,7 @@ public class CreateHandlerTest {
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }
 
 

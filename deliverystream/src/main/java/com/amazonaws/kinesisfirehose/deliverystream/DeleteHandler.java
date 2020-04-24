@@ -43,7 +43,8 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
                 .build()
                 : callbackContext;
 
-        if(callbackContext == null && !doesDeliveryStreamExistWithName(model)) {
+        if(callbackContext == null && !HandlerUtils.doesDeliveryStreamExistWithName(model,
+                clientProxy, firehoseClient)) {
             final Exception e = ResourceNotFoundException.builder()
                     .message("Firehose doesn't exist with the name: " + model.getDeliveryStreamName())
                     .build();
@@ -71,15 +72,18 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
                 logger.log(String.format("deleteDeliveryStream failed with exception %s", e.getMessage()));
                 return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
             }
-        } else if (deliveryStreamStatus.equals(DELIVERY_STREAM_DELETED)) {
-            return ProgressEvent.defaultSuccessHandler(model);
         } else {
-            return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                            .deliveryStreamStatus(getDeliveryStreamStatus(model))
-                            .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
-                            .build(),
-                    (int) Duration.ofSeconds(30).getSeconds(),
-                    model);
+            val currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+            if (currentDeliveryStreamStatus.equals(DELIVERY_STREAM_DELETED)) {
+                return ProgressEvent.defaultSuccessHandler(model);
+            } else {
+                return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
+                                .deliveryStreamStatus(currentDeliveryStreamStatus)
+                                .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
+                                .build(),
+                        (int) Duration.ofSeconds(30).getSeconds(),
+                        model);
+            }
         }
     }
 
@@ -108,22 +112,6 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
         } catch (ResourceNotFoundException e) {
             //Delivery Stream got successfully deleted.
             return DELIVERY_STREAM_DELETED;
-        }
-    }
-
-    private boolean doesDeliveryStreamExistWithName(ResourceModel model) {
-        if(StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
-            return false;
-        }
-
-        try {
-            clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
-                    .deliveryStreamName(model.getDeliveryStreamName())
-                    .build(),
-                    firehoseClient::describeDeliveryStream);
-            return true;
-        } catch (ResourceNotFoundException e) {
-            return false;
         }
     }
 }
