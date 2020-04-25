@@ -65,41 +65,38 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
             throw new RuntimeException(TIMED_OUT_MESSAGE);
         }
 
+        int stabilizationRetriesRemaining = NUMBER_OF_STATUS_POLL_RETRIES;
         if (deliveryStreamStatus == null) {
             try {
-                return deleteDeliveryStream(model);
+                deleteDeliveryStream(model);
             } catch (final Exception e) {
                 logger.log(String.format("deleteDeliveryStream failed with exception %s", e.getMessage()));
                 return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
             }
         } else {
-            val currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
-            if (currentDeliveryStreamStatus.equals(DELIVERY_STREAM_DELETED)) {
-                return ProgressEvent.defaultSuccessHandler(model);
-            } else {
-                return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                                .deliveryStreamStatus(currentDeliveryStreamStatus)
-                                .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
-                                .build(),
-                        (int) Duration.ofSeconds(30).getSeconds(),
-                        model);
-            }
+            stabilizationRetriesRemaining = callbackContext.getStabilizationRetriesRemaining() - 1;
+        }
+
+        val currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+        if (currentDeliveryStreamStatus.equals(DELIVERY_STREAM_DELETED)) {
+            return ProgressEvent.defaultSuccessHandler(model);
+        } else {
+            return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
+                            .deliveryStreamStatus(currentDeliveryStreamStatus)
+                            .stabilizationRetriesRemaining(stabilizationRetriesRemaining)
+                            .build(),
+                    (int) Duration.ofSeconds(30).getSeconds(),
+                    model);
         }
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> deleteDeliveryStream(ResourceModel model) {
+    private void deleteDeliveryStream(ResourceModel model) {
         val deleteDeliveryStreamRequest = DeleteDeliveryStreamRequest.builder()
                 .deliveryStreamName(model.getDeliveryStreamName())
                 .allowForceDelete(true)
                 .build();
 
         clientProxy.injectCredentialsAndInvokeV2(deleteDeliveryStreamRequest, firehoseClient::deleteDeliveryStream);
-        return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                        .deliveryStreamStatus(getDeliveryStreamStatus(model))
-                        .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
-                        .build(),
-                (int)Duration.ofSeconds(30).getSeconds(),
-                model);
     }
 
     private String getDeliveryStreamStatus(ResourceModel model) {
