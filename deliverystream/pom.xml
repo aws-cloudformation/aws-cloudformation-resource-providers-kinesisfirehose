@@ -174,7 +174,6 @@
                         <exclude>**/CallbackContext*</exclude>
                         <exclude>**/HandlerUtils*</exclude>
                         <exclude>**/ExceptionMapper*</exclude>
-                        <exclude>**/DeleteHandler*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
