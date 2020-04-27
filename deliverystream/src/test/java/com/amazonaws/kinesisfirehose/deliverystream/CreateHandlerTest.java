@@ -77,8 +77,12 @@ public class CreateHandlerTest {
                 .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
                 .deliveryStreamStatus(DeliveryStreamStatus.CREATING.toString())
                 .build();
-
         assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
+        assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
+                .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
         assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
         assertThat(response.getCallbackContext()).isEqualToComparingFieldByField(desiredOutputContext);
@@ -125,6 +129,11 @@ public class CreateHandlerTest {
                 .build();
 
         assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
+        assertThat(response.getResourceModel().getRedshiftDestinationConfiguration())
+                .isEqualToComparingFieldByField(REDSHIFT_DESTINATION_CONFIGURATION);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
         assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
         assertThat(response.getCallbackContext()).isEqualToComparingFieldByField(desiredOutputContext);
@@ -171,6 +180,11 @@ public class CreateHandlerTest {
                 .build();
 
         assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
+        assertThat(response.getResourceModel().getElasticsearchDestinationConfiguration())
+                .isEqualToComparingFieldByField(ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
         assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
         assertThat(response.getCallbackContext()).isEqualToComparingFieldByField(desiredOutputContext);
@@ -217,6 +231,11 @@ public class CreateHandlerTest {
                 .build();
 
         assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
+        assertThat(response.getResourceModel().getSplunkDestinationConfiguration())
+                .isEqualToComparingFieldByField(SPLUNK_CONFIGURATION_FULL);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
         assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
         assertThat(response.getCallbackContext()).isEqualToComparingFieldByField(desiredOutputContext);
@@ -264,6 +283,11 @@ public class CreateHandlerTest {
                 .build();
 
         assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
+        assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
+                .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
         assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
         assertThat(response.getCallbackContext()).isEqualToComparingFieldByField(desiredOutputContext);

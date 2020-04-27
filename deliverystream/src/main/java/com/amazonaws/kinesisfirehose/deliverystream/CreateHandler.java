@@ -7,7 +7,6 @@ import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamReques
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
-import software.amazon.awssdk.services.firehose.model.ResourceNotFoundException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
@@ -124,21 +123,5 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .build(),
                 firehoseClient::describeDeliveryStream);
         return response.deliveryStreamDescription().deliveryStreamStatusAsString();
-    }
-
-    private boolean doesDeliveryStreamExistWithName(ResourceModel model) {
-        if(StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
-            return false;
-        }
-
-        try {
-            clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
-                    .deliveryStreamName(model.getDeliveryStreamName())
-                    .build(),
-                    firehoseClient::describeDeliveryStream);
-            return true;
-        } catch (ResourceNotFoundException e) {
-            return false;
-        }
     }
 }

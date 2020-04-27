@@ -192,6 +192,12 @@
         "RoleARN": {
           "type": "string"
         },
+        "S3BackupConfiguration": {
+          "$ref": "#/definitions/S3DestinationConfiguration"
+        },
+        "S3BackupMode": {
+          "type": "string"
+        },
         "S3Configuration": {
           "$ref": "#/definitions/S3DestinationConfiguration"
         },
@@ -399,7 +405,10 @@
         "Type": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "Type"
+      ]
     },
     "KMSEncryptionConfig": {
       "type": "object",
