@@ -189,7 +189,9 @@ public class ReadHandlerTest {
         assertThat(copyCommand.getCopyOptions()).isEqualTo("copyOptions");
         assertThat(copyCommand.getDataTableColumns()).isEqualTo("dataTableColumns");
         assertThat(copyCommand.getDataTableName()).isEqualTo("dataTableName");
+        assertThat(destination.getS3BackupMode()).isEqualTo(BACKUP_MODE);
         validateS3Configuration(destination.getS3Configuration());
+        validateS3Configuration(destination.getS3BackupConfiguration());
     }
 
     @Test
@@ -223,8 +225,10 @@ public class ReadHandlerTest {
         assertThat(resourceModel.getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
         val destination = resourceModel.getRedshiftDestinationConfiguration();
+        assertThat(destination.getS3BackupMode()).isEqualTo(BACKUP_MODE);
         validateCloudWatchConfig(destination.getCloudWatchLoggingOptions());
         validateProcessingConfiguration(destination.getProcessingConfiguration());
+        validateS3Configuration(destination.getS3BackupConfiguration());
     }
 
     @Test
