@@ -685,6 +685,8 @@ class HandlerUtils {
 						.dataTableName(redshiftDestinationDescription.copyCommand().dataTableName())
 						.build())
 				.s3Configuration(translateS3DestinationConfigurationToCfnModel(redshiftDestinationDescription.s3DestinationDescription()))
+				.s3BackupConfiguration(translateS3DestinationConfigurationToCfnModel(redshiftDestinationDescription.s3BackupDescription()))
+				.s3BackupMode(redshiftDestinationDescription.s3BackupModeAsString())
 				.processingConfiguration(translateProcessingConfigurationToCfnModel(redshiftDestinationDescription.processingConfiguration()))
 				.roleARN(redshiftDestinationDescription.roleARN())
 				.username(redshiftDestinationDescription.username())
