@@ -98,7 +98,8 @@ public class DeliveryStreamTestHelper  {
     public static final KinesisStreamSourceConfiguration KINESIS_STREAM_SOURCE_CONFIGURATION = new KinesisStreamSourceConfiguration(KINESIS_STREAM_ARN, ROLE_ARN);
     public static final ResourceModel RESOURCE_WITH_KINESIS = new ResourceModel(DELIVERY_STREAM_NAME, DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, EXTENDED_S3_DESTINATION_CONFIGURATION_FULL, KINESIS_STREAM_SOURCE_CONFIGURATION, null,  null, null);
 
-    public static final RedshiftDestinationConfiguration REDSHIFT_DESTINATION_CONFIGURATION = new RedshiftDestinationConfiguration(CLOUD_WATCH_LOGGING_OPTIONS, "ClusterJBDCurl", new CopyCommand("CopyOptions", "DataTableColumns", "DataTableName"), "Password", PROCESSING_CONFIGURATION, ROLE_ARN, S3_DESTINATION_CONFIG_FULL, BACKUP_MODE, S3_DESTINATION_CONFIG_FULL, "Username");
+    public static final RedshiftRetryOptions REDSHIFT_RETRY_OPTIONS = new RedshiftRetryOptions(DURATION_IN_SECONDS);
+    public static final RedshiftDestinationConfiguration REDSHIFT_DESTINATION_CONFIGURATION = new RedshiftDestinationConfiguration(CLOUD_WATCH_LOGGING_OPTIONS, "ClusterJBDCurl", new CopyCommand("CopyOptions", "DataTableColumns", "DataTableName"), "Password", PROCESSING_CONFIGURATION, REDSHIFT_RETRY_OPTIONS, ROLE_ARN, S3_DESTINATION_CONFIG_FULL, BACKUP_MODE, S3_DESTINATION_CONFIG_FULL, "Username");
     public static final ResourceModel RESOURCE_WITH_REDSHIFT = new ResourceModel(DELIVERY_STREAM_NAME, DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, null, null, REDSHIFT_DESTINATION_CONFIGURATION, null,  null);
 
     public final static software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions CLOUDWATCH_LOGGING_OPTIONS_RESPONSE =
@@ -193,7 +194,7 @@ public class DeliveryStreamTestHelper  {
             .s3BackupDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
             .clusterJDBCURL("clusterJDBCURL")
             .copyCommand(software.amazon.awssdk.services.firehose.model.CopyCommand.builder().copyOptions("copyOptions").dataTableColumns("dataTableColumns").dataTableName("dataTableName").build())
-            .retryOptions(RedshiftRetryOptions.builder().durationInSeconds(1).build())
+            .retryOptions(software.amazon.awssdk.services.firehose.model.RedshiftRetryOptions.builder().durationInSeconds(1).build())
             .roleARN(ROLE_ARN)
             .s3BackupMode(BACKUP_MODE)
             .username("username");

@@ -189,6 +189,9 @@
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
         },
+        "RetryOptions": {
+          "$ref": "#/definitions/RedshiftRetryOptions"
+        },
         "RoleARN": {
           "type": "string"
         },
@@ -299,6 +302,15 @@
       }
     },
     "ElasticsearchRetryOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "DurationInSeconds": {
+          "type": "integer"
+        }
+      }
+    },
+    "RedshiftRetryOptions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {

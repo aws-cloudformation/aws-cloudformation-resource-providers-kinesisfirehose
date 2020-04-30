@@ -183,7 +183,10 @@ class HandlerUtils {
 				.processingConfiguration(translateProcessingConfiguration(redshiftDestinationConfiguration.getProcessingConfiguration()))
 				.roleARN(redshiftDestinationConfiguration.getRoleARN())
 				.s3Configuration(translateS3DestinationConfiguration(redshiftDestinationConfiguration.getS3Configuration()))
+				.s3BackupConfiguration(translateS3DestinationConfiguration(redshiftDestinationConfiguration.getS3BackupConfiguration()))
+				.s3BackupMode(redshiftDestinationConfiguration.getS3BackupMode())
 				.username(redshiftDestinationConfiguration.getUsername())
+				.retryOptions(translateRedshiftRetryOptions(redshiftDestinationConfiguration.getRetryOptions()))
 				.build();
 	}
 
@@ -230,6 +233,7 @@ class HandlerUtils {
 				.s3BackupMode(elasticsearchDestinationConfiguration.getS3BackupMode())
 				.s3Configuration(translateS3DestinationConfiguration(elasticsearchDestinationConfiguration.getS3Configuration()))
 				.clusterEndpoint(elasticsearchDestinationConfiguration.getClusterEndpoint())
+				.typeName(elasticsearchDestinationConfiguration.getTypeName())
 				.build();
 	}
 
@@ -610,7 +614,19 @@ class HandlerUtils {
 				.username(redshiftDestinationConfiguration.getUsername())
 				.password(redshiftDestinationConfiguration.getPassword())
 				.s3Update(translateS3DestinationUpdate(redshiftDestinationConfiguration.getS3Configuration()))
+				.s3BackupUpdate(translateS3DestinationUpdate(redshiftDestinationConfiguration.getS3BackupConfiguration()))
+				.s3BackupMode(redshiftDestinationConfiguration.getS3BackupMode())
 				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(redshiftDestinationConfiguration.getCloudWatchLoggingOptions()))
+				.copyCommand(translateCopyCommand(redshiftDestinationConfiguration.getCopyCommand()))
+				.processingConfiguration(translateProcessingConfiguration(redshiftDestinationConfiguration.getProcessingConfiguration()))
+				.retryOptions(translateRedshiftRetryOptions(redshiftDestinationConfiguration.getRetryOptions()))
+				.build();
+	}
+
+	static software.amazon.awssdk.services.firehose.model.RedshiftRetryOptions translateRedshiftRetryOptions(final RedshiftRetryOptions redshiftRetryOptions) {
+		if(redshiftRetryOptions == null) return null;
+		return software.amazon.awssdk.services.firehose.model.RedshiftRetryOptions.builder()
+				.durationInSeconds(redshiftRetryOptions.getDurationInSeconds())
 				.build();
 	}
 
@@ -624,8 +640,10 @@ class HandlerUtils {
 				.indexRotationPeriod(elasticsearchDestinationConfiguration.getIndexRotationPeriod())
 				.bufferingHints(translateElasticsearchBufferingHints(elasticsearchDestinationConfiguration.getBufferingHints()))
 				.retryOptions(translateElasticsearchRetryOptions(elasticsearchDestinationConfiguration.getRetryOptions()))
+				.processingConfiguration(translateProcessingConfiguration(elasticsearchDestinationConfiguration.getProcessingConfiguration()))
 				.s3Update(translateS3DestinationUpdate(elasticsearchDestinationConfiguration.getS3Configuration()))
 				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(elasticsearchDestinationConfiguration.getCloudWatchLoggingOptions()))
+				.typeName(elasticsearchDestinationConfiguration.getTypeName())
 				.build();
 	}
 
@@ -688,6 +706,9 @@ class HandlerUtils {
 				.s3BackupConfiguration(translateS3DestinationConfigurationToCfnModel(redshiftDestinationDescription.s3BackupDescription()))
 				.s3BackupMode(redshiftDestinationDescription.s3BackupModeAsString())
 				.processingConfiguration(translateProcessingConfigurationToCfnModel(redshiftDestinationDescription.processingConfiguration()))
+				.retryOptions(redshiftDestinationDescription.retryOptions() == null ? null : RedshiftRetryOptions.builder()
+						.durationInSeconds(redshiftDestinationDescription.retryOptions().durationInSeconds())
+						.build())
 				.roleARN(redshiftDestinationDescription.roleARN())
 				.username(redshiftDestinationDescription.username())
 				.build();
