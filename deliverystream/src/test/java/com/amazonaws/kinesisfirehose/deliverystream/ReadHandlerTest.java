@@ -190,6 +190,7 @@ public class ReadHandlerTest {
         assertThat(copyCommand.getDataTableColumns()).isEqualTo("dataTableColumns");
         assertThat(copyCommand.getDataTableName()).isEqualTo("dataTableName");
         assertThat(destination.getS3BackupMode()).isEqualTo(BACKUP_MODE);
+        assertThat(destination.getRetryOptions().getDurationInSeconds()).isEqualTo(1);
         validateS3Configuration(destination.getS3Configuration());
         validateS3Configuration(destination.getS3BackupConfiguration());
     }
