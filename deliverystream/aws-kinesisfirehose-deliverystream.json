@@ -120,7 +120,6 @@
       ]
     },
 
-
     "ExtendedS3DestinationConfiguration": {
       "type": "object",
       "additionalProperties": false,
