@@ -368,6 +368,50 @@ public class ReadHandlerTest {
     }
 
     @Test
+    public void testReadElasticsearchConfigurationWithVpc() {
+        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+                .desiredResourceState(model)
+                .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+                .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                        .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE)
+                        .deliveryStreamARN(DELIVERY_STREAM_NAME_ARN)
+                        .deliveryStreamName(DELIVERY_STREAM_NAME)
+                        .deliveryStreamType(DELIVERY_STREAM_TYPE)
+                        .source(SourceDescription.builder().kinesisStreamSourceDescription(KINESIS_STREAM_SOURCE_DESCRIPTION_RESPONSE).build())
+                        .destinations(ImmutableList.of(DestinationDescription.builder()
+                                .elasticsearchDestinationDescription(ELASTICSEARCH_DESTINATION_VPC_DESCRIPTION_RESPONSE.build())
+                                .build()))
+                        .build())
+                .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
+                .thenReturn(describeResponse);
+
+        val response = new ReadHandler().handleRequest(
+                proxy, request, null, logger);
+        val resourceModel = response.getResourceModel();
+        val esConfig = resourceModel.getElasticsearchDestinationConfiguration();
+        assertThat(esConfig.getBufferingHints().getIntervalInSeconds()).isEqualTo(INTERVAL_IN_SECONDS);
+        assertThat(esConfig.getBufferingHints().getSizeInMBs()).isEqualTo(SIZE_IN_MBS);
+        assertThat(esConfig.getClusterEndpoint()).isEqualTo(CLUSTER_END_POINT);
+        assertThat(esConfig.getDomainARN()).isEqualTo(DOMAIN_ARN);
+        assertThat(esConfig.getIndexName()).isEqualTo(INDEX_NAME);
+        assertThat(esConfig.getIndexRotationPeriod()).isEqualTo(INDEX_ROTATION_PERIOD);
+        assertThat(esConfig.getRetryOptions().getDurationInSeconds()).isEqualTo(1);
+        assertThat(esConfig.getRoleARN()).isEqualTo(ROLE_ARN);
+        assertThat(esConfig.getS3BackupMode()).isEqualTo(BACKUP_MODE);
+        assertThat(esConfig.getTypeName()).isEqualTo(TYPE_NAME);
+        val vpcConfiguration = esConfig.getVpcConfiguration();
+        assertThat(vpcConfiguration.getRoleARN()).isEqualTo(ROLE_ARN);
+        assertThat(vpcConfiguration.getSecurityGroupIds().get(0)).isEqualTo("securityGroupIds");
+        assertThat(vpcConfiguration.getSubnetIds().get(0)).isEqualTo("subnetIds");
+        validateS3Configuration(esConfig.getS3Configuration());
+    }
+
+    @Test
     public void testReadElasticsearchConfigurationWithProcessing() {
         ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()

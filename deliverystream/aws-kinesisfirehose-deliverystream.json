@@ -90,6 +90,37 @@
         "KinesisStreamARN"
       ]
     },
+
+    "VpcConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "RoleARN": {
+          "type": "string"
+        },
+        "SubnetIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "SecurityGroupIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "RoleARN",
+        "SubnetIds",
+        "SecurityGroupIds"
+      ]
+    },
+
+
     "ExtendedS3DestinationConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -256,6 +287,9 @@
         },
         "TypeName": {
           "type": "string"
+        },
+        "VpcConfiguration": {
+          "$ref": "#/definitions/VpcConfiguration"
         }
       },
       "required": [

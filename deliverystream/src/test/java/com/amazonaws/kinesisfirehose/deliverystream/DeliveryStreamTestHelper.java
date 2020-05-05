@@ -89,9 +89,17 @@ public class DeliveryStreamTestHelper  {
     public static final String CLUSTER_END_POINT = "ClusterEndPoint";
     public static final String TYPE_NAME = "TypeName";
     public static final int DURATION_IN_SECONDS = 120;
+    public static final VpcConfiguration VPC_CONFIGURATION = VpcConfiguration.builder()
+            .roleARN(ROLE_ARN)
+            .securityGroupIds(ImmutableList.of("securityGroupIds"))
+            .subnetIds(ImmutableList.of("subnetIds"))
+            .build();
     public static final ElasticsearchRetryOptions ELASTICSEARCH_RETRY_OPTIONS = new ElasticsearchRetryOptions(DURATION_IN_SECONDS);
     public static final ElasticsearchBufferingHints ELASTICSEARCH_BUFFERING_HINTS = new ElasticsearchBufferingHints(INTERVAL_IN_SECONDS, SIZE_IN_MBS);
-    public static final ElasticsearchDestinationConfiguration ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL = new ElasticsearchDestinationConfiguration(ELASTICSEARCH_BUFFERING_HINTS, CLOUD_WATCH_LOGGING_OPTIONS, DOMAIN_ARN, INDEX_NAME, INDEX_ROTATION_PERIOD, PROCESSING_CONFIGURATION, ELASTICSEARCH_RETRY_OPTIONS, ROLE_ARN, BACKUP_MODE, S3_DESTINATION_CONFIG_FULL, CLUSTER_END_POINT, TYPE_NAME);
+    public static final ElasticsearchDestinationConfiguration ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL = new ElasticsearchDestinationConfiguration(
+            ELASTICSEARCH_BUFFERING_HINTS, CLOUD_WATCH_LOGGING_OPTIONS, DOMAIN_ARN, INDEX_NAME, INDEX_ROTATION_PERIOD, PROCESSING_CONFIGURATION, ELASTICSEARCH_RETRY_OPTIONS, ROLE_ARN, BACKUP_MODE, S3_DESTINATION_CONFIG_FULL, CLUSTER_END_POINT, TYPE_NAME, null);
+    public static final ElasticsearchDestinationConfiguration ELASTICSEARCH_DESTINATION_CONFIGURATION_VPC = new ElasticsearchDestinationConfiguration(
+            ELASTICSEARCH_BUFFERING_HINTS, CLOUD_WATCH_LOGGING_OPTIONS, DOMAIN_ARN, INDEX_NAME, INDEX_ROTATION_PERIOD, PROCESSING_CONFIGURATION, ELASTICSEARCH_RETRY_OPTIONS, ROLE_ARN, BACKUP_MODE, S3_DESTINATION_CONFIG_FULL, CLUSTER_END_POINT, TYPE_NAME, VPC_CONFIGURATION);
     public static final ResourceModel RESOURCE_WITH_ELASTICSEARCH = new ResourceModel(DELIVERY_STREAM_NAME, DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL,null, null, null, null,  null);
 
     public static final String KINESIS_STREAM_ARN = "KinesisStreamArn";
@@ -211,6 +219,24 @@ public class DeliveryStreamTestHelper  {
             .s3BackupMode(BACKUP_MODE)
             .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
             .typeName(TYPE_NAME);
+
+    public final static ElasticsearchDestinationDescription.Builder ELASTICSEARCH_DESTINATION_VPC_DESCRIPTION_RESPONSE = ElasticsearchDestinationDescription.builder()
+            .bufferingHints(software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints.builder().intervalInSeconds(INTERVAL_IN_SECONDS).sizeInMBs(SIZE_IN_MBS).build())
+            .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS_RESPONSE)
+            .clusterEndpoint(CLUSTER_END_POINT)
+            .domainARN(DOMAIN_ARN)
+            .indexName(INDEX_NAME)
+            .indexRotationPeriod(INDEX_ROTATION_PERIOD)
+            .retryOptions(software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions.builder().durationInSeconds(1).build())
+            .roleARN(ROLE_ARN)
+            .s3BackupMode(BACKUP_MODE)
+            .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
+            .typeName(TYPE_NAME)
+            .vpcConfigurationDescription(VpcConfigurationDescription.builder()
+                    .roleARN(ROLE_ARN)
+                    .securityGroupIds(ImmutableList.of("securityGroupIds"))
+                    .subnetIds(ImmutableList.of("subnetIds"))
+                    .build());
 
     public final static SplunkDestinationDescription SPLUNK_DESTINATION_DESCRIPTION_RESPONSE = SplunkDestinationDescription.builder()
             .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS_RESPONSE)

@@ -146,6 +146,57 @@ public class CreateHandlerTest {
     }
 
     @Test
+    public void testCreateDeliveryStreamWithVpcElasticSearch() {
+        final ResourceModel model = ResourceModel.builder()
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
+                .deliveryStreamType(DELIVERY_STREAM_TYPE)
+                .elasticsearchDestinationConfiguration(ELASTICSEARCH_DESTINATION_CONFIGURATION_VPC)
+                .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+                .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                        .deliveryStreamStatus(DeliveryStreamStatus.CREATING)
+                        .build())
+                .build();
+        final CreateDeliveryStreamResponse createResponse = CreateDeliveryStreamResponse.builder()
+                .deliveryStreamARN(DELIVERY_STREAM_NAME_ARN)
+                .build();
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+                any())).thenThrow(ResourceNotFoundException.builder().build())
+                .thenReturn(describeResponse);
+        doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
+                any());
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+                .desiredResourceState(model)
+                .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+                = handler.handleRequest(proxy, request, null, logger);
+
+        final CallbackContext desiredOutputContext = CallbackContext.builder()
+                .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
+                .deliveryStreamStatus(DeliveryStreamStatus.CREATING.toString())
+                .build();
+
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
+        assertThat(response.getResourceModel().getElasticsearchDestinationConfiguration())
+                .isEqualToComparingFieldByField(ELASTICSEARCH_DESTINATION_CONFIGURATION_VPC);
+        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getCallbackContext()).isEqualToComparingFieldByField(desiredOutputContext);
+        assertThat(response.getCallbackDelaySeconds()).isEqualTo(30);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+    }
+
+    @Test
     public void testCreateDeliveryStreamWithElasticSearchConfiguration() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
