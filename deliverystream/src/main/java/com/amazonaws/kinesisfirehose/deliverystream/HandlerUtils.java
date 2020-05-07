@@ -50,7 +50,10 @@ class HandlerUtils {
 	}*/
 
 	static software.amazon.awssdk.services.firehose.model.VpcConfiguration translateVpcConfiguration(final VpcConfiguration vpcConfiguration) {
-		return vpcConfiguration == null ? null : software.amazon.awssdk.services.firehose.model.VpcConfiguration.builder()
+		if (vpcConfiguration == null) {
+			return null;
+		}
+		return software.amazon.awssdk.services.firehose.model.VpcConfiguration.builder()
 				.roleARN(vpcConfiguration.getRoleARN())
 				.subnetIds(vpcConfiguration.getSubnetIds())
 				.securityGroupIds(vpcConfiguration.getSecurityGroupIds())
@@ -898,9 +901,11 @@ class HandlerUtils {
 				.build();
 	}
 
-	static VpcConfiguration translateVpcConfigurationToCfnModel(
-			VpcConfigurationDescription vpcConfiguration) {
-		return vpcConfiguration == null ? null : VpcConfiguration.builder()
+	static VpcConfiguration translateVpcConfigurationToCfnModel(VpcConfigurationDescription vpcConfiguration) {
+		if (vpcConfiguration == null) {
+			return null;
+		}
+		return VpcConfiguration.builder()
 				.roleARN(vpcConfiguration.roleARN())
 				.subnetIds(vpcConfiguration.subnetIds())
 				.securityGroupIds(vpcConfiguration.securityGroupIds())

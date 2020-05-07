@@ -161,8 +161,8 @@ public class CreateHandlerTest {
         final CreateDeliveryStreamResponse createResponse = CreateDeliveryStreamResponse.builder()
                 .deliveryStreamARN(DELIVERY_STREAM_NAME_ARN)
                 .build();
-        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
-                any())).thenThrow(ResourceNotFoundException.builder().build())
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
+                .thenThrow(ResourceNotFoundException.builder().build())
                 .thenReturn(describeResponse);
         doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
                 any());
