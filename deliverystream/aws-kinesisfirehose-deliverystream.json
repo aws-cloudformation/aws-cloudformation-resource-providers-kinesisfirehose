@@ -674,7 +674,8 @@
   ],
   "createOnlyProperties": [
     "/properties/DeliveryStreamName",
-    "/properties/DeliveryStreamType"
+    "/properties/DeliveryStreamType",
+    "/properties/ElasticsearchDestinationConfiguration/VpcConfiguration"
   ],
   "primaryIdentifier": [
     "/properties/Id"
