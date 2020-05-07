@@ -16,7 +16,7 @@ import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import java.time.Duration;
 
 public class DeleteHandler extends BaseHandler<CallbackContext> {
-    static final int NUMBER_OF_STATUS_POLL_RETRIES = 40;
+    static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
     static final String DELIVERY_STREAM_DELETED = "Delivery Stream Deleted";
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream to get DELETED.";
 

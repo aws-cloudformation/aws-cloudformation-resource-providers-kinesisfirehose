@@ -90,7 +90,6 @@
         "KinesisStreamARN"
       ]
     },
-
     "VpcConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -119,7 +118,6 @@
         "SecurityGroupIds"
       ]
     },
-
     "ExtendedS3DestinationConfiguration": {
       "type": "object",
       "additionalProperties": false,
