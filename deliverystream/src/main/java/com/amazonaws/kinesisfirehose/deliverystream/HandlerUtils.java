@@ -49,16 +49,16 @@ class HandlerUtils {
 		});
 	}*/
 
-	static software.amazon.awssdk.services.firehose.model.VpcConfiguration translateVpcConfiguration(final VpcConfiguration vpcConfiguration) {
-		if (vpcConfiguration == null) {
-			return null;
-		}
-		return software.amazon.awssdk.services.firehose.model.VpcConfiguration.builder()
-				.roleARN(vpcConfiguration.getRoleARN())
-				.subnetIds(vpcConfiguration.getSubnetIds())
-				.securityGroupIds(vpcConfiguration.getSecurityGroupIds())
-				.build();
-	}
+    static software.amazon.awssdk.services.firehose.model.VpcConfiguration translateVpcConfiguration(final VpcConfiguration vpcConfiguration) {
+        if (vpcConfiguration == null) {
+            return null;
+        }
+        return software.amazon.awssdk.services.firehose.model.VpcConfiguration.builder()
+                .roleARN(vpcConfiguration.getRoleARN())
+                .subnetIds(vpcConfiguration.getSubnetIds())
+                .securityGroupIds(vpcConfiguration.getSecurityGroupIds())
+                .build();
+    }
 
 	static software.amazon.awssdk.services.firehose.model.S3DestinationConfiguration translateS3DestinationConfiguration(final S3DestinationConfiguration s3DestinationConfiguration) {
 		if(s3DestinationConfiguration == null) return null;
@@ -901,16 +901,16 @@ class HandlerUtils {
 				.build();
 	}
 
-	static VpcConfiguration translateVpcConfigurationToCfnModel(VpcConfigurationDescription vpcConfiguration) {
-		if (vpcConfiguration == null) {
-			return null;
-		}
-		return VpcConfiguration.builder()
-				.roleARN(vpcConfiguration.roleARN())
-				.subnetIds(vpcConfiguration.subnetIds())
-				.securityGroupIds(vpcConfiguration.securityGroupIds())
-				.build();
-	}
+    static VpcConfiguration translateVpcConfigurationToCfnModel(VpcConfigurationDescription vpcConfiguration) {
+        if (vpcConfiguration == null) {
+            return null;
+        }
+        return VpcConfiguration.builder()
+                .roleARN(vpcConfiguration.roleARN())
+                .subnetIds(vpcConfiguration.subnetIds())
+                .securityGroupIds(vpcConfiguration.securityGroupIds())
+                .build();
+    }
 
 	static boolean doesDeliveryStreamExistWithName(ResourceModel model,
 												   AmazonWebServicesClientProxy clientProxy,
