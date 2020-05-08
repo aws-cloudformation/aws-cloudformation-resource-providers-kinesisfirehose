@@ -90,6 +90,38 @@
         "KinesisStreamARN"
       ]
     },
+    "VpcConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "RoleARN": {
+          "type": "string"
+        },
+        "SubnetIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "SecurityGroupIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "RoleARN",
+        "SubnetIds",
+        "SecurityGroupIds"
+      ]
+    },
     "ExtendedS3DestinationConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -256,6 +288,9 @@
         },
         "TypeName": {
           "type": "string"
+        },
+        "VpcConfiguration": {
+          "$ref": "#/definitions/VpcConfiguration"
         }
       },
       "required": [
@@ -643,7 +678,8 @@
   ],
   "createOnlyProperties": [
     "/properties/DeliveryStreamName",
-    "/properties/DeliveryStreamType"
+    "/properties/DeliveryStreamType",
+    "/properties/ElasticsearchDestinationConfiguration/VpcConfiguration"
   ],
   "primaryIdentifier": [
     "/properties/Id"

@@ -16,7 +16,7 @@ import software.amazon.cloudformation.resource.IdentifierUtils;
 import java.time.Duration;
 
 public class CreateHandler extends BaseHandler<CallbackContext> {
-    static final int NUMBER_OF_STATUS_POLL_RETRIES = 40;
+    static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream to become ACTIVE.";
 
     private AmazonWebServicesClientProxy clientProxy;
