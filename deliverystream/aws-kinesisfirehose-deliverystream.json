@@ -102,14 +102,18 @@
           "uniqueItems": true,
           "items": {
             "type": "string"
-          }
+          },
+          "minItems": 1,
+          "maxItems": 16
         },
         "SecurityGroupIds": {
           "type": "array",
           "uniqueItems": true,
           "items": {
             "type": "string"
-          }
+          },
+          "minItems": 1,
+          "maxItems": 5
         }
       },
       "required": [
