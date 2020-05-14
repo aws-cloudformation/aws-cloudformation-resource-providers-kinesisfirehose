@@ -10,10 +10,17 @@
       "type": "string"
     },
     "DeliveryStreamName": {
-      "type": "string"
+      "type": "string",
+      "minimum": 1,
+      "maximum": 64,
+      "pattern": "[a-zA-Z0-9._-]+"
     },
     "DeliveryStreamType": {
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "DirectPut",
+        "KinesisStreamAsSource"
+      ]
     },
     "ElasticsearchDestinationConfiguration": {
       "$ref": "#/definitions/ElasticsearchDestinationConfiguration"
@@ -43,16 +50,26 @@
           "$ref": "#/definitions/CloudWatchLoggingOptions"
         },
         "HECAcknowledgmentTimeoutInSeconds": {
-          "type": "integer"
+          "type": "integer",
+          "minimum": 180,
+          "maximum": 600
         },
         "HECEndpoint": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 2048
         },
         "HECEndpointType": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "Raw",
+            "Event"
+          ]
         },
         "HECToken": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 2048
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
@@ -79,10 +96,16 @@
       "additionalProperties": false,
       "properties": {
         "KinesisStreamARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         },
         "RoleARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         }
       },
       "required": [
@@ -95,13 +118,18 @@
       "additionalProperties": false,
       "properties": {
         "RoleARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         },
         "SubnetIds": {
           "type": "array",
           "uniqueItems": true,
           "items": {
-            "type": "string"
+            "type": "string",
+            "minimum": 1,
+            "maximum": 1024
           },
           "minItems": 1,
           "maxItems": 16
@@ -110,7 +138,9 @@
           "type": "array",
           "uniqueItems": true,
           "items": {
-            "type": "string"
+            "type": "string",
+            "minimum": 1,
+            "maximum": 1024
           },
           "minItems": 1,
           "maxItems": 5
@@ -127,7 +157,10 @@
       "additionalProperties": false,
       "properties": {
         "BucketARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 2048,
+          "pattern": "arn:.*"
         },
         "BufferingHints": {
           "$ref": "#/definitions/BufferingHints"
@@ -136,7 +169,14 @@
           "$ref": "#/definitions/CloudWatchLoggingOptions"
         },
         "CompressionFormat": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "UNCOMPRESSED",
+            "GZIP",
+            "ZIP",
+            "Snappy",
+            "HADOOP_SNAPPY"
+          ]
         },
         "DataFormatConversionConfiguration": {
           "$ref": "#/definitions/DataFormatConversionConfiguration"
@@ -145,22 +185,33 @@
           "$ref": "#/definitions/EncryptionConfiguration"
         },
         "ErrorOutputPrefix": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 1024
         },
         "Prefix": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 1024
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
         },
         "RoleARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         },
         "S3BackupConfiguration": {
           "$ref": "#/definitions/S3DestinationConfiguration"
         },
         "S3BackupMode": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "Disabled",
+            "Enabled"
+          ]
         }
       },
       "required": [
@@ -173,7 +224,10 @@
       "additionalProperties": false,
       "properties": {
         "BucketARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 2048,
+          "pattern": "arn:.*"
         },
         "BufferingHints": {
           "$ref": "#/definitions/BufferingHints"
@@ -182,19 +236,33 @@
           "$ref": "#/definitions/CloudWatchLoggingOptions"
         },
         "CompressionFormat": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "UNCOMPRESSED",
+            "GZIP",
+            "ZIP",
+            "Snappy",
+            "HADOOP_SNAPPY"
+          ]
         },
         "EncryptionConfiguration": {
           "$ref": "#/definitions/EncryptionConfiguration"
         },
         "ErrorOutputPrefix": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 1024
         },
         "Prefix": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 1024
         },
         "RoleARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         }
       },
       "required": [
@@ -210,13 +278,17 @@
           "$ref": "#/definitions/CloudWatchLoggingOptions"
         },
         "ClusterJDBCURL": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512
         },
         "CopyCommand": {
           "$ref": "#/definitions/CopyCommand"
         },
         "Password": {
-          "type": "string"
+          "type": "string",
+          "minimum": 6,
+          "maximum": 512
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
@@ -225,19 +297,28 @@
           "$ref": "#/definitions/RedshiftRetryOptions"
         },
         "RoleARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         },
         "S3BackupConfiguration": {
           "$ref": "#/definitions/S3DestinationConfiguration"
         },
         "S3BackupMode": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "Disabled",
+            "Enabled"
+          ]
         },
         "S3Configuration": {
           "$ref": "#/definitions/S3DestinationConfiguration"
         },
         "Username": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512
         }
       },
       "required": [
@@ -260,13 +341,25 @@
           "$ref": "#/definitions/CloudWatchLoggingOptions"
         },
         "DomainARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         },
         "IndexName": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 80
         },
         "IndexRotationPeriod": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "NoRotation",
+            "OneHour",
+            "OneDay",
+            "OneWeek",
+            "OneMonth"
+          ]
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
@@ -275,19 +368,31 @@
           "$ref": "#/definitions/ElasticsearchRetryOptions"
         },
         "RoleARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         },
         "S3BackupMode": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "FailedDocumentsOnly",
+            "AllDocuments"
+          ]
         },
         "S3Configuration": {
           "$ref": "#/definitions/S3DestinationConfiguration"
         },
         "ClusterEndpoint": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "https:.*"
         },
         "TypeName": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 100
         },
         "VpcConfiguration": {
           "$ref": "#/definitions/VpcConfiguration"
@@ -377,13 +482,19 @@
       "additionalProperties": false,
       "properties": {
         "CopyOptions": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 204800
         },
         "DataTableColumns": {
-          "type": "string"
+          "type": "string",
+          "minimum": 0,
+          "maximum": 204800
         },
         "DataTableName": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512
         }
       },
       "required": [
@@ -398,7 +509,10 @@
           "$ref": "#/definitions/KMSEncryptionConfig"
         },
         "NoEncryptionConfig": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "NoEncryption"
+          ]
         }
       }
     },
@@ -450,7 +564,10 @@
           }
         },
         "Type": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "Lambda"
+          ]
         }
       },
       "required": [
@@ -492,7 +609,10 @@
           "type": "string"
         },
         "RoleARN": {
-          "type": "string"
+          "type": "string",
+          "minimum": 1,
+          "maximum": 512,
+          "pattern": "arn:.*"
         },
         "TableName": {
           "type": "string"
