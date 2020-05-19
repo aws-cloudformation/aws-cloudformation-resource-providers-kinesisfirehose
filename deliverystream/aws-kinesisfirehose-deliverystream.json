@@ -3,9 +3,6 @@
   "description": "Resource Type definition for AWS::KinesisFirehose::DeliveryStream",
   "additionalProperties": false,
   "properties": {
-    "Id": {
-      "type": "string"
-    },
     "Arn": {
       "type": "string"
     },
@@ -793,8 +790,7 @@
     }
   },
   "readOnlyProperties": [
-    "/properties/Arn",
-    "/properties/Id"
+    "/properties/Arn"
   ],
   "createOnlyProperties": [
     "/properties/DeliveryStreamName",
@@ -802,6 +798,6 @@
     "/properties/ElasticsearchDestinationConfiguration/VpcConfiguration"
   ],
   "primaryIdentifier": [
-    "/properties/Id"
+    "/properties/DeliveryStreamName"
   ]
 }

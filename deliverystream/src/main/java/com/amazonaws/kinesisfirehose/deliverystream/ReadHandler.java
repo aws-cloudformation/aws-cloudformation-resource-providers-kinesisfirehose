@@ -26,15 +26,14 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
 
         clientProxy = proxy;
         final ResourceModel model = request.getDesiredResourceState();
-        logger.log(String.format("Read Handler called with id %s.", model.getId()));
+        logger.log(String.format("Read Handler called with id %s.", model.getDeliveryStreamName()));
 
-        model.setDeliveryStreamName(model.getId());
         try {
             val returnModel = describeDeliveryStreamRequest(model);
             return ProgressEvent.defaultSuccessHandler(returnModel);
         } catch (Exception e) {
             logger.log(String.format("Got exception for %s, error message %s",
-                model.getId(),
+                model.getDeliveryStreamName(),
                 e.getMessage()));
             return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
         }
@@ -48,7 +47,6 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
                 firehoseClient::describeDeliveryStream)
                 .deliveryStreamDescription();
         model.setArn(des.deliveryStreamARN());
-        model.setId(des.deliveryStreamName());
         model.setKinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfigurationToCfnModel(des.source()));
         model.setDeliveryStreamType(des.deliveryStreamStatusAsString());
         return setDestinationDescription(model, des.destinations());

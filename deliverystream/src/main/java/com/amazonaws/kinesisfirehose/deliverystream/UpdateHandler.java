@@ -26,8 +26,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         clientProxy = proxy;
 
         try {
-            logger.log(String.format("Update Handler called with deliveryStream PrimaryId %s", model.getId()));
-            model.setDeliveryStreamName(model.getId());
+            logger.log(String.format("Update Handler called with deliveryStream PrimaryId %s", model.getDeliveryStreamName()));
             val describeResponse =  clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
                     .deliveryStreamName(model.getDeliveryStreamName())
                     .build(),

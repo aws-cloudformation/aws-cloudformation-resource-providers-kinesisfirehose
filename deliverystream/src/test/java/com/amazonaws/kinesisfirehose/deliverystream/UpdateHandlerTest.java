@@ -47,7 +47,7 @@ public class UpdateHandlerTest {
     @Test
     public void testUpdateDeliverySteamWithS3ExtendedConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
 
@@ -74,9 +74,7 @@ public class UpdateHandlerTest {
         final ProgressEvent<ResourceModel, CallbackContext> response
                 = handler.handleRequest(proxy, request, null, logger);
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getDeliveryStreamName())
-                .isEqualTo(response.getResourceModel().getId());
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
                 .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
@@ -91,7 +89,7 @@ public class UpdateHandlerTest {
     @Test
     public void testUpdateDeliverySteamWithRedshiftConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .redshiftDestinationConfiguration(REDSHIFT_DESTINATION_CONFIGURATION)
                 .build();
 
@@ -118,9 +116,7 @@ public class UpdateHandlerTest {
         final ProgressEvent<ResourceModel, CallbackContext> response
                 = handler.handleRequest(proxy, request, null, logger);
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getDeliveryStreamName())
-                .isEqualTo(response.getResourceModel().getId());
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getRedshiftDestinationConfiguration())
                 .isEqualToComparingFieldByField(REDSHIFT_DESTINATION_CONFIGURATION);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
@@ -135,7 +131,7 @@ public class UpdateHandlerTest {
     @Test
     public void testUpdateDeliverySteamWithElasticSearchConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .elasticsearchDestinationConfiguration(ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL)
                 .build();
 
@@ -162,9 +158,7 @@ public class UpdateHandlerTest {
         final ProgressEvent<ResourceModel, CallbackContext> response
                 = handler.handleRequest(proxy, request, null, logger);
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getDeliveryStreamName())
-                .isEqualTo(response.getResourceModel().getId());
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getElasticsearchDestinationConfiguration())
                 .isEqualToComparingFieldByField(ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
@@ -179,7 +173,7 @@ public class UpdateHandlerTest {
     @Test
     public void testUpdateDeliverySteamWithSplunkConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .splunkDestinationConfiguration(SPLUNK_CONFIGURATION_FULL)
                 .build();
 
@@ -206,9 +200,7 @@ public class UpdateHandlerTest {
         final ProgressEvent<ResourceModel, CallbackContext> response
                 = handler.handleRequest(proxy, request, null, logger);
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getDeliveryStreamName())
-                .isEqualTo(response.getResourceModel().getId());
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getSplunkDestinationConfiguration())
                 .isEqualToComparingFieldByField(SPLUNK_CONFIGURATION_FULL);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
