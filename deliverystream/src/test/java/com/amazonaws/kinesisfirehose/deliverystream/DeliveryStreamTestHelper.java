@@ -41,15 +41,15 @@ public class DeliveryStreamTestHelper  {
     public static final String DELIVERY_STREAM_TYPE = "streamType";
     public static final String DELIVERY_STREAM_TYPE_UPDATED = "streamTypeUpdated";
 
-    public static final ResourceModel RESOURCE_UNNAMED = new ResourceModel(null, null, null, null, null, null,  null, null, S3_DESTINATION_CONFIG, null);
-    public static final ResourceModel RESOURCE = new ResourceModel(DELIVERY_STREAM_NAME, null, DELIVERY_STREAM_NAME, null, null, null, null, null, S3_DESTINATION_CONFIG, null);
-    public static final ResourceModel RESOURCE_UPDATED = new ResourceModel(DELIVERY_STREAM_NAME, null, DELIVERY_STREAM_NAME, null, null, null, null, null,  S3_DESTINATION_CONFIG_UPDATED, null);
+    public static final ResourceModel RESOURCE_UNNAMED = new ResourceModel(null, null, null, null, null,  null, null, S3_DESTINATION_CONFIG, null);
+    public static final ResourceModel RESOURCE = new ResourceModel(null, DELIVERY_STREAM_NAME, null, null, null, null, null, S3_DESTINATION_CONFIG, null);
+    public static final ResourceModel RESOURCE_UPDATED = new ResourceModel(null, DELIVERY_STREAM_NAME, null, null, null, null, null,  S3_DESTINATION_CONFIG_UPDATED, null);
 
     public static final CloudWatchLoggingOptions CLOUD_WATCH_LOGGING_OPTIONS = new CloudWatchLoggingOptions(true, "LogGroupName", "LogStreamName");
     public static final ProcessingConfiguration PROCESSING_CONFIGURATION = new ProcessingConfiguration(true, Collections.emptyList());
     public static final SplunkRetryOptions RETRY_OPTIONS = new SplunkRetryOptions(INTERVAL_IN_SECONDS);
     public static final SplunkDestinationConfiguration SPLUNK_CONFIGURATION_FULL = new SplunkDestinationConfiguration(CLOUD_WATCH_LOGGING_OPTIONS, 60, "endpoint", "type", "token", PROCESSING_CONFIGURATION, RETRY_OPTIONS, "backup", S3_DESTINATION_CONFIG);
-    public static final ResourceModel RESOURCE_WITH_SPLUNK = new ResourceModel(null, null, null, null, null, null, null, null, null, SPLUNK_CONFIGURATION_FULL);
+    public static final ResourceModel RESOURCE_WITH_SPLUNK = new ResourceModel(null, null, null, null, null, null, null, null, SPLUNK_CONFIGURATION_FULL);
 
     public static final DataFormatConversionConfiguration DATA_FORMAT_CONVERSION_CONFIGURATION = DataFormatConversionConfiguration.builder()
             .inputFormatConfiguration(InputFormatConfiguration.builder()
@@ -80,7 +80,7 @@ public class DeliveryStreamTestHelper  {
 
     public static final S3DestinationConfiguration S3_DESTINATION_CONFIG_FULL = new S3DestinationConfiguration(BUCKET_ARN, BUFFERING_HINTS, CLOUD_WATCH_LOGGING_OPTIONS, COMPRESSION_FORMAT, ENCRYPTION_CONFIGURATION, PREFIX, ROLE_ARN, ERROR_OUTPUT_PREFIX);
     public static final ExtendedS3DestinationConfiguration EXTENDED_S3_DESTINATION_CONFIGURATION_FULL = new ExtendedS3DestinationConfiguration(BUCKET_ARN, BUFFERING_HINTS, CLOUD_WATCH_LOGGING_OPTIONS, COMPRESSION_FORMAT, DATA_FORMAT_CONVERSION_CONFIGURATION, ENCRYPTION_CONFIGURATION, ERROR_OUTPUT_PREFIX, PREFIX , PROCESSING_CONFIGURATION, ROLE_ARN, S3_DESTINATION_CONFIG_FULL, BACKUP_MODE);
-    public static final ResourceModel RESOURCE_WITH_S3_EXTENDED = new ResourceModel(DELIVERY_STREAM_NAME, DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, EXTENDED_S3_DESTINATION_CONFIGURATION_FULL, null, null, null,  null);
+    public static final ResourceModel RESOURCE_WITH_S3_EXTENDED = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, EXTENDED_S3_DESTINATION_CONFIGURATION_FULL, null, null, null,  null);
 
 
     public static final String DOMAIN_ARN = "DomainArn";
@@ -123,15 +123,15 @@ public class DeliveryStreamTestHelper  {
             CLUSTER_END_POINT,
             TYPE_NAME,
             VPC_CONFIGURATION);
-    public static final ResourceModel RESOURCE_WITH_ELASTICSEARCH = new ResourceModel(DELIVERY_STREAM_NAME, DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL,null, null, null, null,  null);
+    public static final ResourceModel RESOURCE_WITH_ELASTICSEARCH = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL,null, null, null, null,  null);
 
     public static final String KINESIS_STREAM_ARN = "KinesisStreamArn";
     public static final KinesisStreamSourceConfiguration KINESIS_STREAM_SOURCE_CONFIGURATION = new KinesisStreamSourceConfiguration(KINESIS_STREAM_ARN, ROLE_ARN);
-    public static final ResourceModel RESOURCE_WITH_KINESIS = new ResourceModel(DELIVERY_STREAM_NAME, DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, EXTENDED_S3_DESTINATION_CONFIGURATION_FULL, KINESIS_STREAM_SOURCE_CONFIGURATION, null,  null, null);
+    public static final ResourceModel RESOURCE_WITH_KINESIS = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, EXTENDED_S3_DESTINATION_CONFIGURATION_FULL, KINESIS_STREAM_SOURCE_CONFIGURATION, null,  null, null);
 
     public static final RedshiftRetryOptions REDSHIFT_RETRY_OPTIONS = new RedshiftRetryOptions(DURATION_IN_SECONDS);
     public static final RedshiftDestinationConfiguration REDSHIFT_DESTINATION_CONFIGURATION = new RedshiftDestinationConfiguration(CLOUD_WATCH_LOGGING_OPTIONS, "ClusterJBDCurl", new CopyCommand("CopyOptions", "DataTableColumns", "DataTableName"), "Password", PROCESSING_CONFIGURATION, REDSHIFT_RETRY_OPTIONS, ROLE_ARN, S3_DESTINATION_CONFIG_FULL, BACKUP_MODE, S3_DESTINATION_CONFIG_FULL, "Username");
-    public static final ResourceModel RESOURCE_WITH_REDSHIFT = new ResourceModel(DELIVERY_STREAM_NAME, DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, null, null, REDSHIFT_DESTINATION_CONFIGURATION, null,  null);
+    public static final ResourceModel RESOURCE_WITH_REDSHIFT = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, null, null, REDSHIFT_DESTINATION_CONFIGURATION, null,  null);
 
     public final static software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions CLOUDWATCH_LOGGING_OPTIONS_RESPONSE =
             software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions.builder().enabled(true).logGroupName("LogGroupName").logStreamName("LogStreamName").build();

@@ -46,7 +46,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamWithS3ExtendedConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -87,7 +87,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamWithRedshiftConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .redshiftDestinationConfiguration(REDSHIFT_DESTINATION_CONFIGURATION)
                 .build();
@@ -128,7 +128,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamWithElasticSearchConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .elasticsearchDestinationConfiguration(ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -169,7 +169,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamWithSplunkConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .splunkDestinationConfiguration(SPLUNK_CONFIGURATION_FULL)
                 .build();
@@ -210,7 +210,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamWithSASConfiguration() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .kinesisStreamSourceConfiguration(KINESIS_STREAM_SOURCE_CONFIGURATION)
@@ -252,7 +252,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamInProgress_WithInitialActiveState() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -298,7 +298,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamInProgress_WithInitialCreatingFailedState() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -344,7 +344,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamInProgress_WithInitialDeletingState() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -390,7 +390,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamInProgress_WithInitialDeletingFailedState() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -436,7 +436,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamComplete() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -475,7 +475,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamStabilizationTimeout() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();
@@ -499,7 +499,7 @@ public class DeleteHandlerTest {
     @Test
     public void testDeleteDeliverySteamDoesNotExist() {
         final ResourceModel model = ResourceModel.builder()
-                .id(DELIVERY_STREAM_NAME)
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
                 .build();

@@ -37,7 +37,7 @@ public class ListHandler extends BaseHandler<CallbackContext> {
             val deliveryStreams = response.deliveryStreamNames();
             models.addAll(deliveryStreams.stream()
                     .map(deliverystream ->
-                            ResourceModel.builder().id(deliverystream).build())
+                            ResourceModel.builder().deliveryStreamName(deliverystream).build())
                     .collect(Collectors.toList()));
             if (response.deliveryStreamNames().size() == 0 || !response.hasMoreDeliveryStreams()) {
                 request.setNextToken(null);

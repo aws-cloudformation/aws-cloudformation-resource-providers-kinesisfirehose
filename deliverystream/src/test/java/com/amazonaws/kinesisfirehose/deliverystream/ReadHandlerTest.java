@@ -52,7 +52,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadDeliveryStreamWithKinesisStreamAsSource() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -80,7 +80,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadExtendedS3DeliveryStream() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -102,7 +102,6 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
         val destination = resourceModel.getExtendedS3DestinationConfiguration();
         assertThat(destination.getBucketARN()).isEqualTo(BUCKET_ARN);
@@ -115,7 +114,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadExtendedS3DeliveryStreamWithCloudwatchLoggingAndProcessing() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -141,7 +140,6 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
         val destination = resourceModel.getExtendedS3DestinationConfiguration();
         assertThat(destination.getBucketARN()).isEqualTo(BUCKET_ARN);
@@ -156,7 +154,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadRedshiftDestinationConfiguration() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -179,7 +177,6 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
         val destination = resourceModel.getRedshiftDestinationConfiguration();
         assertThat(destination.getClusterJDBCURL()).isEqualTo("clusterJDBCURL");
@@ -197,7 +194,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadRedshiftDestinationConfigurationWithProcessingAndCloudwatchLogging() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -223,7 +220,6 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
         val destination = resourceModel.getRedshiftDestinationConfiguration();
         assertThat(destination.getS3BackupMode()).isEqualTo(BACKUP_MODE);
@@ -234,7 +230,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadDataFormatConversion() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -258,7 +254,6 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
         val destination = resourceModel.getExtendedS3DestinationConfiguration();
         val dataformatConversionConfg = destination.getDataFormatConversionConfiguration();
@@ -290,7 +285,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadS3DeliveryStream() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -312,7 +307,6 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
         val destination = resourceModel.getS3DestinationConfiguration();
         assertThat(destination.getBucketARN()).isEqualTo(BUCKET_ARN);
@@ -328,7 +322,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadElasticsearchConfiguration() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -360,7 +354,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadElasticsearchConfigurationWithVpc() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -395,7 +389,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadElasticsearchConfigurationWithProcessing() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -429,7 +423,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testReadSplunkConfiguration() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();
@@ -468,7 +462,7 @@ public class ReadHandlerTest {
 
     @Test
     public void testResourceNotFound() {
-        ResourceModel model = ResourceModel.builder().id(DELIVERY_STREAM_NAME).build();
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
                 .build();

@@ -79,7 +79,6 @@ public class CreateHandlerTest {
                 .build();
         assertThat(response).isNotNull();
         assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
         assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
                 .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
@@ -130,7 +129,6 @@ public class CreateHandlerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
         assertThat(response.getResourceModel().getRedshiftDestinationConfiguration())
                 .isEqualToComparingFieldByField(REDSHIFT_DESTINATION_CONFIGURATION);
@@ -181,7 +179,6 @@ public class CreateHandlerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
         assertThat(response.getResourceModel().getElasticsearchDestinationConfiguration())
                 .isEqualToComparingFieldByField(ELASTICSEARCH_DESTINATION_CONFIGURATION_VPC);
@@ -232,7 +229,6 @@ public class CreateHandlerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
         assertThat(response.getResourceModel().getElasticsearchDestinationConfiguration())
                 .isEqualToComparingFieldByField(ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL);
@@ -283,7 +279,6 @@ public class CreateHandlerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
         assertThat(response.getResourceModel().getSplunkDestinationConfiguration())
                 .isEqualToComparingFieldByField(SPLUNK_CONFIGURATION_FULL);
@@ -335,7 +330,6 @@ public class CreateHandlerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getId()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
         assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
                 .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);

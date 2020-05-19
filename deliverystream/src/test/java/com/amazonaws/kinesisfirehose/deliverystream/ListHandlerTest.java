@@ -75,7 +75,7 @@ public class ListHandlerTest {
                 .thenReturn(listResponse);
         val response = listHandler.handleRequest(
                 proxy, request, null, logger);
-        assertThat(response.getResourceModels().stream().map(m -> m.getId()).collect(Collectors.toList()))
+        assertThat(response.getResourceModels().stream().map(m -> m.getDeliveryStreamName()).collect(Collectors.toList()))
                 .isEqualTo(responseModels);
         assertThat(response.getNextToken()).isEqualTo("test-delivery-stream-2");
     }

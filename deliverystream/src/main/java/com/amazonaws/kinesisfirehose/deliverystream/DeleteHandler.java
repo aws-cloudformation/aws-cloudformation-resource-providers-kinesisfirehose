@@ -33,9 +33,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
         final ResourceModel model = request.getDesiredResourceState();
         clientProxy = proxy;
 
-        logger.log(String.format("Delete Handler called with deliveryStream PrimaryId %s", model.getId()));
-
-        model.setDeliveryStreamName(model.getId());
+        logger.log(String.format("Delete Handler called with deliveryStream PrimaryId %s", model.getDeliveryStreamName()));
 
         final CallbackContext currentContext = callbackContext == null
                 ? CallbackContext.builder()
