@@ -1,5 +1,6 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.google.common.collect.ImmutableMap;
 import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
@@ -480,5 +481,29 @@ public class CreateHandlerTest {
         assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.ResourceConflict);
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+    }
+
+    @Test
+    public void testGenerateName() {
+        final ResourceHandlerRequest<ResourceModel> request1 = ResourceHandlerRequest.<ResourceModel>builder()
+                .clientRequestToken("test")
+                .logicalResourceIdentifier("test-delivery-stream")
+                .build();
+
+        assertThat(CreateHandler.generateName(request1).startsWith("test-delivery-stream")).isTrue();
+
+        final ResourceHandlerRequest<ResourceModel> request2 = ResourceHandlerRequest.<ResourceModel>builder()
+                .clientRequestToken("test")
+                .build();
+
+        assertThat(CreateHandler.generateName(request2).startsWith("deliverystream")).isTrue();
+
+        final ResourceHandlerRequest<ResourceModel> request3 = ResourceHandlerRequest.<ResourceModel>builder()
+                .clientRequestToken("test")
+                .logicalResourceIdentifier("test-delivery-stream")
+                .systemTags(ImmutableMap.of("aws:cloudformation:stack-name", "test-stack"))
+                .build();
+
+        assertThat(CreateHandler.generateName(request3).startsWith("test-stack-test-delivery-stream")).isTrue();
     }
 }
