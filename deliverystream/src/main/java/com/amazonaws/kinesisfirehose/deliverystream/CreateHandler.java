@@ -1,7 +1,7 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
 import com.amazonaws.util.StringUtils;
-import lombok.val;
+import com.google.common.annotations.VisibleForTesting;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
@@ -15,7 +15,12 @@ import software.amazon.cloudformation.resource.IdentifierUtils;
 
 import java.time.Duration;
 
+import lombok.val;
+
 public class CreateHandler extends BaseHandler<CallbackContext> {
+    private static final String STACK_NAME_TAG_KEY = "aws:cloudformation:stack-name";
+    private static final String DEFAULT_DELIVERY_STREAM_NAME_PREFIX = "deliverystream";
+    private static final int MAX_LENGTH_DELIVERY_STREAM_NAME = 64;
     static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream to become ACTIVE.";
 
@@ -49,17 +54,13 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
 
         if (StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
             model.setDeliveryStreamName(
-                    IdentifierUtils.generateResourceIdentifier(
-                            request.getLogicalResourceIdentifier(),
-                            request.getClientRequestToken()
-                    )
+                    generateName(request)
             );
         }
 
         // This Lambda will continually be re-invoked with the current state of the instance, finally succeeding when state stabilizes.
         return createDeliveryStreamAndUpdateProgress(model, currentContext, logger);
     }
-
 
     private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStreamAndUpdateProgress(ResourceModel model,
                                                                                                 CallbackContext callbackContext,
@@ -122,5 +123,24 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .build(),
                 firehoseClient::describeDeliveryStream);
         return response.deliveryStreamDescription().deliveryStreamStatusAsString();
+    }
+
+    @VisibleForTesting
+    protected static String generateName(ResourceHandlerRequest<ResourceModel> request) {
+        StringBuffer identifierPrefix = new StringBuffer();
+        // the prefix will be <stack-name>-<logical-name>
+        identifierPrefix.append((request.getSystemTags() != null && request.getSystemTags().containsKey(STACK_NAME_TAG_KEY)) ?
+                request.getSystemTags().get(STACK_NAME_TAG_KEY) + "-" :
+                "");
+        identifierPrefix.append(request.getLogicalResourceIdentifier() == null ?
+                DEFAULT_DELIVERY_STREAM_NAME_PREFIX :
+                request.getLogicalResourceIdentifier());
+        // This utility function will add the auto-generated ID after the prefix.
+        String name = IdentifierUtils.generateResourceIdentifier(
+                identifierPrefix.toString(),
+                request.getClientRequestToken(),
+                MAX_LENGTH_DELIVERY_STREAM_NAME);
+
+        return name;
     }
 }
