@@ -128,7 +128,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
     @VisibleForTesting
     protected static String generateName(ResourceHandlerRequest<ResourceModel> request) {
         StringBuffer identifierPrefix = new StringBuffer();
-        // the prefix will be <stack-name>-<resource type>
+        // the prefix will be <stack-name>-<logical-name>
         identifierPrefix.append((request.getSystemTags() != null && request.getSystemTags().containsKey(STACK_NAME_TAG_KEY)) ?
                 request.getSystemTags().get(STACK_NAME_TAG_KEY) + "-" :
                 "");
