@@ -29,10 +29,10 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
-        final AmazonWebServicesClientProxy proxy,
-        final ResourceHandlerRequest<ResourceModel> request,
-        final CallbackContext callbackContext,
-        final Logger logger) {
+            final AmazonWebServicesClientProxy proxy,
+            final ResourceHandlerRequest<ResourceModel> request,
+            final CallbackContext callbackContext,
+            final Logger logger) {
 
         final ResourceModel model = request.getDesiredResourceState();
         clientProxy = proxy;
@@ -103,6 +103,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .elasticsearchDestinationConfiguration(HandlerUtils.translateElasticsearchDestinationConfiguration(model.getElasticsearchDestinationConfiguration()))
                 .kinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfiguration(model.getKinesisStreamSourceConfiguration()))
                 .splunkDestinationConfiguration(HandlerUtils.translateSplunkDestinationConfiguration(model.getSplunkDestinationConfiguration()))
+                .httpEndpointDestinationConfiguration(HandlerUtils.translateHttpEndpointDestinationConfiguration(model.getHttpEndpointDestinationConfiguration()))
                 .build();
 
         //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that act on a DeliveryStream
@@ -110,17 +111,17 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         val response = clientProxy.injectCredentialsAndInvokeV2(createDeliveryStreamRequest, firehoseClient::createDeliveryStream);
         model.setArn(response.deliveryStreamARN());
         return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                .deliveryStreamStatus(getDeliveryStreamStatus(model))
-                .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
-                .build(),
+                        .deliveryStreamStatus(getDeliveryStreamStatus(model))
+                        .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
+                        .build(),
                 (int)Duration.ofSeconds(30).getSeconds(),
                 model);
     }
 
     private String getDeliveryStreamStatus(ResourceModel model) {
         val response = clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
-                .deliveryStreamName(model.getDeliveryStreamName())
-                .build(),
+                        .deliveryStreamName(model.getDeliveryStreamName())
+                        .build(),
                 firehoseClient::describeDeliveryStream);
         return response.deliveryStreamDescription().deliveryStreamStatusAsString();
     }

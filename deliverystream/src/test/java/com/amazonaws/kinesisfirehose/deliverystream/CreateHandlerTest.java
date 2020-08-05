@@ -63,16 +63,16 @@ public class CreateHandlerTest {
                 .build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
                 any())).thenThrow(ResourceNotFoundException.builder().build())
-                       .thenReturn(describeResponse);
+                .thenReturn(describeResponse);
         doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
                 any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-            .desiredResourceState(model)
-            .build();
+                .desiredResourceState(model)
+                .build();
 
         final ProgressEvent<ResourceModel, CallbackContext> response
-            = handler.handleRequest(proxy, request, null, logger);
+                = handler.handleRequest(proxy, request, null, logger);
 
         final CallbackContext desiredOutputContext = CallbackContext.builder()
                 .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
@@ -295,6 +295,56 @@ public class CreateHandlerTest {
     }
 
     @Test
+    public void testCreateDeliveryStreamWithHttpEndpointConfiguration() {
+        final ResourceModel model = ResourceModel.builder()
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
+                .deliveryStreamType(DELIVERY_STREAM_TYPE)
+                .httpEndpointDestinationConfiguration(HTTP_ENDPOINT_DESTINATION_CONFIGURATION)
+                .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+                .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                        .deliveryStreamStatus(DeliveryStreamStatus.CREATING)
+                        .build())
+                .build();
+        final CreateDeliveryStreamResponse createResponse = CreateDeliveryStreamResponse.builder()
+                .deliveryStreamARN(DELIVERY_STREAM_NAME_ARN)
+                .build();
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+                any())).thenThrow(ResourceNotFoundException.builder().build())
+                .thenReturn(describeResponse);
+        doReturn(createResponse).when(proxy).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class),
+                any());
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+                .desiredResourceState(model)
+                .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+                = handler.handleRequest(proxy, request, null, logger);
+
+        final CallbackContext desiredOutputContext = CallbackContext.builder()
+                .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
+                .deliveryStreamStatus(DeliveryStreamStatus.CREATING.toString())
+                .build();
+
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getArn()).isEqualTo(DELIVERY_STREAM_NAME_ARN);
+        assertThat(response.getResourceModel().getHttpEndpointDestinationConfiguration())
+                .isEqualToComparingFieldByField(HTTP_ENDPOINT_DESTINATION_CONFIGURATION);
+        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getCallbackContext()).isEqualToComparingFieldByField(desiredOutputContext);
+        assertThat(response.getCallbackDelaySeconds()).isEqualTo(30);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+    }
+
+    @Test
     public void testCreateDeliveryStreamWithSASConfiguration() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
@@ -476,7 +526,7 @@ public class CreateHandlerTest {
                 .build();
 
         final ProgressEvent<ResourceModel, CallbackContext> response =
-            handler.handleRequest(proxy, request, null, logger);
+                handler.handleRequest(proxy, request, null, logger);
         assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
         assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.ResourceConflict);
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());

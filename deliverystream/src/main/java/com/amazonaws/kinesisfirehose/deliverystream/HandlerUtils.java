@@ -3,12 +3,16 @@ package com.amazonaws.kinesisfirehose.deliverystream;
 import com.amazonaws.util.StringUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import lombok.val;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.*;
+import software.amazon.awssdk.services.firehose.model.HttpEndpointCommonAttribute;
+import software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 class HandlerUtils {
@@ -32,7 +36,7 @@ class HandlerUtils {
 	}
 
 	/*public static software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput translateDeliveryStreamEncryptionConfigurationInput(final DeliveryStreamEncryptionConfigurationInput deliveryStreamEncryptionConfigurationInput) {
-		if(deliveryStreamEncryptionConfigurationInput == null) return null;
+		if(deliveryStreamEncryptionConfigurationInput == null) returnwhere null;
 		return software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput.builder()
 				.keyType(deliveryStreamEncryptionConfigurationInput.getKeyType())
 				.keyARN(deliveryStreamEncryptionConfigurationInput.getKeyARN())
@@ -49,16 +53,16 @@ class HandlerUtils {
 		});
 	}*/
 
-    static software.amazon.awssdk.services.firehose.model.VpcConfiguration translateVpcConfiguration(final VpcConfiguration vpcConfiguration) {
-        if (vpcConfiguration == null) {
-            return null;
-        }
-        return software.amazon.awssdk.services.firehose.model.VpcConfiguration.builder()
-                .roleARN(vpcConfiguration.getRoleARN())
-                .subnetIds(vpcConfiguration.getSubnetIds())
-                .securityGroupIds(vpcConfiguration.getSecurityGroupIds())
-                .build();
-    }
+	static software.amazon.awssdk.services.firehose.model.VpcConfiguration translateVpcConfiguration(final VpcConfiguration vpcConfiguration) {
+		if (vpcConfiguration == null) {
+			return null;
+		}
+		return software.amazon.awssdk.services.firehose.model.VpcConfiguration.builder()
+				.roleARN(vpcConfiguration.getRoleARN())
+				.subnetIds(vpcConfiguration.getSubnetIds())
+				.securityGroupIds(vpcConfiguration.getSecurityGroupIds())
+				.build();
+	}
 
 	static software.amazon.awssdk.services.firehose.model.S3DestinationConfiguration translateS3DestinationConfiguration(final S3DestinationConfiguration s3DestinationConfiguration) {
 		if(s3DestinationConfiguration == null) return null;
@@ -102,7 +106,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.ExtendedS3DestinationConfiguration> translateExtendedS3DestinationConfigurationCollection(final Collection<ExtendedS3DestinationConfiguration> extendedS3DestinationConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.ExtendedS3DestinationConfiguration> translateExtendedS3DestinationConfigurationCollection(final Collection<ExtendedS3DestinationConfiguration> extendedS3DestinationConfigurationCollection) {
 		if(extendedS3DestinationConfigurationCollection == null) return null;
 		return Collections2.transform(extendedS3DestinationConfigurationCollection, new Function<ExtendedS3DestinationConfiguration, software.amazon.awssdk.services.firehose.model.ExtendedS3DestinationConfiguration>() {
 			@Override
@@ -120,6 +124,22 @@ class HandlerUtils {
 				.build();
 	}
 
+	static software.amazon.awssdk.services.firehose.model.HttpEndpointBufferingHints translateHttpEndpointBufferingHints(
+			final BufferingHints bufferingHints) {
+		if(bufferingHints == null) return null;
+		return software.amazon.awssdk.services.firehose.model.HttpEndpointBufferingHints.builder()
+				.intervalInSeconds(bufferingHints.getIntervalInSeconds())
+				.sizeInMBs(bufferingHints.getSizeInMBs())
+				.build();
+	}
+
+	static software.amazon.awssdk.services.firehose.model.HttpEndpointRetryOptions translateHttpEndpointRetryOptions(final RetryOptions retryOptions) {
+		if(retryOptions == null) return null;
+		return software.amazon.awssdk.services.firehose.model.HttpEndpointRetryOptions.builder()
+				.durationInSeconds(retryOptions.getDurationInSeconds())
+				.build();
+	}
+
 	static Collection<software.amazon.awssdk.services.firehose.model.BufferingHints> translateBufferingHintsCollection(final Collection<BufferingHints> bufferingHintsCollection) {
 		if(bufferingHintsCollection == null) return null;
 		return Collections2.transform(bufferingHintsCollection, new Function<BufferingHints, software.amazon.awssdk.services.firehose.model.BufferingHints>() {
@@ -130,7 +150,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.EncryptionConfiguration translateEncryptionConfiguration(final EncryptionConfiguration encryptionConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.EncryptionConfiguration translateEncryptionConfiguration(final EncryptionConfiguration encryptionConfiguration) {
 		if(encryptionConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.EncryptionConfiguration.builder()
 				.kmsEncryptionConfig(translateKMSEncryptionConfig(encryptionConfiguration.getKMSEncryptionConfig()))
@@ -138,7 +158,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.EncryptionConfiguration> translateEncryptionConfigurationCollection(final Collection<EncryptionConfiguration> encryptionConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.EncryptionConfiguration> translateEncryptionConfigurationCollection(final Collection<EncryptionConfiguration> encryptionConfigurationCollection) {
 		if(encryptionConfigurationCollection == null) return null;
 		return Collections2.transform(encryptionConfigurationCollection, new Function<EncryptionConfiguration, software.amazon.awssdk.services.firehose.model.EncryptionConfiguration>() {
 			@Override
@@ -148,14 +168,14 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.KMSEncryptionConfig translateKMSEncryptionConfig(final KMSEncryptionConfig kMSEncryptionConfig) {
+	static software.amazon.awssdk.services.firehose.model.KMSEncryptionConfig translateKMSEncryptionConfig(final KMSEncryptionConfig kMSEncryptionConfig) {
 		if(kMSEncryptionConfig == null) return null;
 		return software.amazon.awssdk.services.firehose.model.KMSEncryptionConfig.builder()
 				.awskmsKeyARN(kMSEncryptionConfig.getAWSKMSKeyARN())
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.KMSEncryptionConfig> translateKMSEncryptionConfigCollection(final Collection<KMSEncryptionConfig> kMSEncryptionConfigCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.KMSEncryptionConfig> translateKMSEncryptionConfigCollection(final Collection<KMSEncryptionConfig> kMSEncryptionConfigCollection) {
 		if(kMSEncryptionConfigCollection == null) return null;
 		return Collections2.transform(kMSEncryptionConfigCollection, new Function<KMSEncryptionConfig, software.amazon.awssdk.services.firehose.model.KMSEncryptionConfig>() {
 			@Override
@@ -165,7 +185,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions translateCloudWatchLoggingOptions(final CloudWatchLoggingOptions cloudWatchLoggingOptions) {
+	static software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions translateCloudWatchLoggingOptions(final CloudWatchLoggingOptions cloudWatchLoggingOptions) {
 		if(cloudWatchLoggingOptions == null) return null;
 		return software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions.builder()
 				.enabled(cloudWatchLoggingOptions.getEnabled())
@@ -174,7 +194,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions> translateCloudWatchLoggingOptionsCollection(final Collection<CloudWatchLoggingOptions> cloudWatchLoggingOptionsCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions> translateCloudWatchLoggingOptionsCollection(final Collection<CloudWatchLoggingOptions> cloudWatchLoggingOptionsCollection) {
 		if(cloudWatchLoggingOptionsCollection == null) return null;
 		return Collections2.transform(cloudWatchLoggingOptionsCollection, new Function<CloudWatchLoggingOptions, software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions>() {
 			@Override
@@ -184,7 +204,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.RedshiftDestinationConfiguration translateRedshiftDestinationConfiguration(final RedshiftDestinationConfiguration redshiftDestinationConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.RedshiftDestinationConfiguration translateRedshiftDestinationConfiguration(final RedshiftDestinationConfiguration redshiftDestinationConfiguration) {
 		if(redshiftDestinationConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.RedshiftDestinationConfiguration.builder()
 				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(redshiftDestinationConfiguration.getCloudWatchLoggingOptions()))
@@ -201,7 +221,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.RedshiftDestinationConfiguration> translateRedshiftDestinationConfigurationCollection(final Collection<RedshiftDestinationConfiguration> redshiftDestinationConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.RedshiftDestinationConfiguration> translateRedshiftDestinationConfigurationCollection(final Collection<RedshiftDestinationConfiguration> redshiftDestinationConfigurationCollection) {
 		if(redshiftDestinationConfigurationCollection == null) return null;
 		return Collections2.transform(redshiftDestinationConfigurationCollection, new Function<RedshiftDestinationConfiguration, software.amazon.awssdk.services.firehose.model.RedshiftDestinationConfiguration>() {
 			@Override
@@ -211,7 +231,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.CopyCommand translateCopyCommand(final CopyCommand copyCommand) {
+	static software.amazon.awssdk.services.firehose.model.CopyCommand translateCopyCommand(final CopyCommand copyCommand) {
 		if(copyCommand == null) return null;
 		return software.amazon.awssdk.services.firehose.model.CopyCommand.builder()
 				.copyOptions(copyCommand.getCopyOptions())
@@ -220,7 +240,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.CopyCommand> translateCopyCommandCollection(final Collection<CopyCommand> copyCommandCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.CopyCommand> translateCopyCommandCollection(final Collection<CopyCommand> copyCommandCollection) {
 		if(copyCommandCollection == null) return null;
 		return Collections2.transform(copyCommandCollection, new Function<CopyCommand, software.amazon.awssdk.services.firehose.model.CopyCommand>() {
 			@Override
@@ -230,7 +250,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.ElasticsearchDestinationConfiguration translateElasticsearchDestinationConfiguration(final ElasticsearchDestinationConfiguration elasticsearchDestinationConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.ElasticsearchDestinationConfiguration translateElasticsearchDestinationConfiguration(final ElasticsearchDestinationConfiguration elasticsearchDestinationConfiguration) {
 		if(elasticsearchDestinationConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.ElasticsearchDestinationConfiguration.builder()
 				.bufferingHints(translateElasticsearchBufferingHints(elasticsearchDestinationConfiguration.getBufferingHints()))
@@ -249,7 +269,52 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.ElasticsearchDestinationConfiguration> translateElasticsearchDestinationConfigurationCollection(final Collection<ElasticsearchDestinationConfiguration> elasticsearchDestinationConfigurationCollection) {
+	static software.amazon.awssdk.services.firehose.model.HttpEndpointDestinationConfiguration translateHttpEndpointDestinationConfiguration(
+			final HttpEndpointDestinationConfiguration httpEndpointDestinationConfiguration) {
+		if(httpEndpointDestinationConfiguration == null) return null;
+		return software.amazon.awssdk.services.firehose.model.HttpEndpointDestinationConfiguration.builder()
+				.bufferingHints(translateHttpEndpointBufferingHints(httpEndpointDestinationConfiguration.getBufferingHints()))
+				.requestConfiguration(translateHttpEndpointRequestConfiguration(httpEndpointDestinationConfiguration.getRequestConfiguration()))
+				.endpointConfiguration(translateHttpEndpointConfiguration(httpEndpointDestinationConfiguration.getEndpointConfiguration()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(httpEndpointDestinationConfiguration.getCloudWatchLoggingOptions()))
+				.processingConfiguration(translateProcessingConfiguration(httpEndpointDestinationConfiguration.getProcessingConfiguration()))
+				.retryOptions(translateHttpEndpointRetryOptions(httpEndpointDestinationConfiguration.getRetryOptions()))
+				.roleARN(httpEndpointDestinationConfiguration.getRoleARN())
+				.s3BackupMode(httpEndpointDestinationConfiguration.getS3BackupMode())
+				.s3Configuration(translateS3DestinationConfiguration(httpEndpointDestinationConfiguration.getS3Configuration()))
+				.build();
+	}
+
+	static software.amazon.awssdk.services.firehose.model.HttpEndpointConfiguration translateHttpEndpointConfiguration(
+			final com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointConfiguration httpEndpointConfiguration) {
+		if(httpEndpointConfiguration == null) return null;
+		return software.amazon.awssdk.services.firehose.model.HttpEndpointConfiguration.builder()
+				.accessKey(httpEndpointConfiguration.getAccessKey())
+				.name(httpEndpointConfiguration.getName())
+				.url(httpEndpointConfiguration.getUrl())
+				.build();
+	}
+
+	static software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration translateHttpEndpointRequestConfiguration(
+			final com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointRequestConfiguration httpEndpointDestinationConfiguration) {
+		if(httpEndpointDestinationConfiguration == null) return null;
+		return software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration.builder()
+				.commonAttributes(Optional.ofNullable(httpEndpointDestinationConfiguration.getCommonAttributes())
+						.map(cas -> cas.stream()
+								.map(ca -> HttpEndpointCommonAttribute.builder()
+										.attributeName(ca.getAttributeName())
+										.attributeValue(ca.getAttributeValue())
+										.build())
+								.collect(Collectors.toList())
+						).orElse(null)
+
+				)
+				.contentEncoding(httpEndpointDestinationConfiguration.getContentEncoding() == null ? null
+						: httpEndpointDestinationConfiguration.getContentEncoding().toString())
+				.build();
+	}
+
+	static Collection<software.amazon.awssdk.services.firehose.model.ElasticsearchDestinationConfiguration> translateElasticsearchDestinationConfigurationCollection(final Collection<ElasticsearchDestinationConfiguration> elasticsearchDestinationConfigurationCollection) {
 		if(elasticsearchDestinationConfigurationCollection == null) return null;
 		return Collections2.transform(elasticsearchDestinationConfigurationCollection, new Function<ElasticsearchDestinationConfiguration, software.amazon.awssdk.services.firehose.model.ElasticsearchDestinationConfiguration>() {
 			@Override
@@ -259,7 +324,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints translateElasticsearchBufferingHints(final ElasticsearchBufferingHints elasticsearchBufferingHints) {
+	static software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints translateElasticsearchBufferingHints(final ElasticsearchBufferingHints elasticsearchBufferingHints) {
 		if(elasticsearchBufferingHints == null) return null;
 		return software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints.builder()
 				.intervalInSeconds(elasticsearchBufferingHints.getIntervalInSeconds())
@@ -267,7 +332,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints> translateElasticsearchBufferingHintsCollection(final Collection<ElasticsearchBufferingHints> elasticsearchBufferingHintsCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints> translateElasticsearchBufferingHintsCollection(final Collection<ElasticsearchBufferingHints> elasticsearchBufferingHintsCollection) {
 		if(elasticsearchBufferingHintsCollection == null) return null;
 		return Collections2.transform(elasticsearchBufferingHintsCollection, new Function<ElasticsearchBufferingHints, software.amazon.awssdk.services.firehose.model.ElasticsearchBufferingHints>() {
 			@Override
@@ -277,14 +342,14 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions translateElasticsearchRetryOptions(final ElasticsearchRetryOptions elasticsearchRetryOptions) {
+	static software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions translateElasticsearchRetryOptions(final ElasticsearchRetryOptions elasticsearchRetryOptions) {
 		if(elasticsearchRetryOptions == null) return null;
 		return software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions.builder()
 				.durationInSeconds(elasticsearchRetryOptions.getDurationInSeconds())
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions> translateElasticsearchRetryOptionsCollection(final Collection<ElasticsearchRetryOptions> elasticsearchRetryOptionsCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions> translateElasticsearchRetryOptionsCollection(final Collection<ElasticsearchRetryOptions> elasticsearchRetryOptionsCollection) {
 		if(elasticsearchRetryOptionsCollection == null) return null;
 		return Collections2.transform(elasticsearchRetryOptionsCollection, new Function<ElasticsearchRetryOptions, software.amazon.awssdk.services.firehose.model.ElasticsearchRetryOptions>() {
 			@Override
@@ -294,7 +359,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.ProcessingConfiguration translateProcessingConfiguration(final ProcessingConfiguration processingConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.ProcessingConfiguration translateProcessingConfiguration(final ProcessingConfiguration processingConfiguration) {
 		if(processingConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.ProcessingConfiguration.builder()
 				.enabled(processingConfiguration.getEnabled())
@@ -302,7 +367,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.ProcessingConfiguration> translateProcessingConfigurationCollection(final Collection<ProcessingConfiguration> processingConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.ProcessingConfiguration> translateProcessingConfigurationCollection(final Collection<ProcessingConfiguration> processingConfigurationCollection) {
 		if(processingConfigurationCollection == null) return null;
 		return Collections2.transform(processingConfigurationCollection, new Function<ProcessingConfiguration, software.amazon.awssdk.services.firehose.model.ProcessingConfiguration>() {
 			@Override
@@ -312,7 +377,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.Processor translateProcessor(final Processor processor) {
+	static software.amazon.awssdk.services.firehose.model.Processor translateProcessor(final Processor processor) {
 		if(processor == null) return null;
 		return software.amazon.awssdk.services.firehose.model.Processor.builder()
 				.parameters(translateProcessorParameterCollection(processor.getParameters()))
@@ -320,7 +385,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.Processor> translateProcessorCollection(final Collection<Processor> processorCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.Processor> translateProcessorCollection(final Collection<Processor> processorCollection) {
 		if(processorCollection == null) return null;
 		return Collections2.transform(processorCollection, new Function<Processor, software.amazon.awssdk.services.firehose.model.Processor>() {
 			@Override
@@ -330,7 +395,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.ProcessorParameter translateProcessorParameter(final ProcessorParameter processorParameter) {
+	static software.amazon.awssdk.services.firehose.model.ProcessorParameter translateProcessorParameter(final ProcessorParameter processorParameter) {
 		if(processorParameter == null) return null;
 		return software.amazon.awssdk.services.firehose.model.ProcessorParameter.builder()
 				.parameterName(processorParameter.getParameterName())
@@ -338,7 +403,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.ProcessorParameter> translateProcessorParameterCollection(final Collection<ProcessorParameter> processorParameterCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.ProcessorParameter> translateProcessorParameterCollection(final Collection<ProcessorParameter> processorParameterCollection) {
 		if(processorParameterCollection == null) return null;
 		return Collections2.transform(processorParameterCollection, new Function<ProcessorParameter, software.amazon.awssdk.services.firehose.model.ProcessorParameter>() {
 			@Override
@@ -348,7 +413,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration translateDataFormatConversionConfiguration(final DataFormatConversionConfiguration dataFormatConversionConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration translateDataFormatConversionConfiguration(final DataFormatConversionConfiguration dataFormatConversionConfiguration) {
 		if(dataFormatConversionConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration.builder()
 				.schemaConfiguration(translateSchemaConfiguration(dataFormatConversionConfiguration.getSchemaConfiguration()))
@@ -358,7 +423,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration> translateDataFormatConversionConfigurationCollection(final Collection<DataFormatConversionConfiguration> dataFormatConversionConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration> translateDataFormatConversionConfigurationCollection(final Collection<DataFormatConversionConfiguration> dataFormatConversionConfigurationCollection) {
 		if(dataFormatConversionConfigurationCollection == null) return null;
 		return Collections2.transform(dataFormatConversionConfigurationCollection, new Function<DataFormatConversionConfiguration, software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration>() {
 			@Override
@@ -368,7 +433,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.SchemaConfiguration translateSchemaConfiguration(final SchemaConfiguration schemaConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.SchemaConfiguration translateSchemaConfiguration(final SchemaConfiguration schemaConfiguration) {
 		if(schemaConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.SchemaConfiguration.builder()
 				.roleARN(schemaConfiguration.getRoleARN())
@@ -380,7 +445,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.SchemaConfiguration> translateSchemaConfigurationCollection(final Collection<SchemaConfiguration> schemaConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.SchemaConfiguration> translateSchemaConfigurationCollection(final Collection<SchemaConfiguration> schemaConfigurationCollection) {
 		if(schemaConfigurationCollection == null) return null;
 		return Collections2.transform(schemaConfigurationCollection, new Function<SchemaConfiguration, software.amazon.awssdk.services.firehose.model.SchemaConfiguration>() {
 			@Override
@@ -390,14 +455,14 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.InputFormatConfiguration translateInputFormatConfiguration(final InputFormatConfiguration inputFormatConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.InputFormatConfiguration translateInputFormatConfiguration(final InputFormatConfiguration inputFormatConfiguration) {
 		if(inputFormatConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.InputFormatConfiguration.builder()
 				.deserializer(translateDeserializer(inputFormatConfiguration.getDeserializer()))
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.InputFormatConfiguration> translateInputFormatConfigurationCollection(final Collection<InputFormatConfiguration> inputFormatConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.InputFormatConfiguration> translateInputFormatConfigurationCollection(final Collection<InputFormatConfiguration> inputFormatConfigurationCollection) {
 		if(inputFormatConfigurationCollection == null) return null;
 		return Collections2.transform(inputFormatConfigurationCollection, new Function<InputFormatConfiguration, software.amazon.awssdk.services.firehose.model.InputFormatConfiguration>() {
 			@Override
@@ -407,7 +472,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.Deserializer translateDeserializer(final Deserializer deserializer) {
+	static software.amazon.awssdk.services.firehose.model.Deserializer translateDeserializer(final Deserializer deserializer) {
 		if(deserializer == null) return null;
 		return software.amazon.awssdk.services.firehose.model.Deserializer.builder()
 				.openXJsonSerDe(translateOpenXJsonSerDe(deserializer.getOpenXJsonSerDe()))
@@ -415,7 +480,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.Deserializer> translateDeserializerCollection(final Collection<Deserializer> deserializerCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.Deserializer> translateDeserializerCollection(final Collection<Deserializer> deserializerCollection) {
 		if(deserializerCollection == null) return null;
 		return Collections2.transform(deserializerCollection, new Function<Deserializer, software.amazon.awssdk.services.firehose.model.Deserializer>() {
 			@Override
@@ -425,14 +490,14 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration translateOutputFormatConfiguration(final OutputFormatConfiguration outputFormatConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration translateOutputFormatConfiguration(final OutputFormatConfiguration outputFormatConfiguration) {
 		if(outputFormatConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration.builder()
 				.serializer(translateSerializer(outputFormatConfiguration.getSerializer()))
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration> translateOutputFormatConfigurationCollection(final Collection<OutputFormatConfiguration> outputFormatConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration> translateOutputFormatConfigurationCollection(final Collection<OutputFormatConfiguration> outputFormatConfigurationCollection) {
 		if(outputFormatConfigurationCollection == null) return null;
 		return Collections2.transform(outputFormatConfigurationCollection, new Function<OutputFormatConfiguration, software.amazon.awssdk.services.firehose.model.OutputFormatConfiguration>() {
 			@Override
@@ -442,7 +507,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.Serializer translateSerializer(final Serializer serializer) {
+	static software.amazon.awssdk.services.firehose.model.Serializer translateSerializer(final Serializer serializer) {
 		if(serializer == null) return null;
 		return software.amazon.awssdk.services.firehose.model.Serializer.builder()
 				.parquetSerDe(translateParquetSerDe(serializer.getParquetSerDe()))
@@ -450,7 +515,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.Serializer> translateSerializerCollection(final Collection<Serializer> serializerCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.Serializer> translateSerializerCollection(final Collection<Serializer> serializerCollection) {
 		if(serializerCollection == null) return null;
 		return Collections2.transform(serializerCollection, new Function<Serializer, software.amazon.awssdk.services.firehose.model.Serializer>() {
 			@Override
@@ -460,7 +525,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.OpenXJsonSerDe translateOpenXJsonSerDe(final OpenXJsonSerDe openXJsonSerDe) {
+	static software.amazon.awssdk.services.firehose.model.OpenXJsonSerDe translateOpenXJsonSerDe(final OpenXJsonSerDe openXJsonSerDe) {
 		if(openXJsonSerDe == null) return null;
 		return software.amazon.awssdk.services.firehose.model.OpenXJsonSerDe.builder()
 				.convertDotsInJsonKeysToUnderscores(openXJsonSerDe.getConvertDotsInJsonKeysToUnderscores())
@@ -469,7 +534,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.OpenXJsonSerDe> translateOpenXJsonSerDeCollection(final Collection<OpenXJsonSerDe> openXJsonSerDeCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.OpenXJsonSerDe> translateOpenXJsonSerDeCollection(final Collection<OpenXJsonSerDe> openXJsonSerDeCollection) {
 		if(openXJsonSerDeCollection == null) return null;
 		return Collections2.transform(openXJsonSerDeCollection, new Function<OpenXJsonSerDe, software.amazon.awssdk.services.firehose.model.OpenXJsonSerDe>() {
 			@Override
@@ -479,14 +544,14 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.HiveJsonSerDe translateHiveJsonSerDe(final HiveJsonSerDe hiveJsonSerDe) {
+	static software.amazon.awssdk.services.firehose.model.HiveJsonSerDe translateHiveJsonSerDe(final HiveJsonSerDe hiveJsonSerDe) {
 		if(hiveJsonSerDe == null) return null;
 		return software.amazon.awssdk.services.firehose.model.HiveJsonSerDe.builder()
 				.timestampFormats(hiveJsonSerDe.getTimestampFormats())
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.HiveJsonSerDe> translateHiveJsonSerDeCollection(final Collection<HiveJsonSerDe> hiveJsonSerDeCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.HiveJsonSerDe> translateHiveJsonSerDeCollection(final Collection<HiveJsonSerDe> hiveJsonSerDeCollection) {
 		if(hiveJsonSerDeCollection == null) return null;
 		return Collections2.transform(hiveJsonSerDeCollection, new Function<HiveJsonSerDe, software.amazon.awssdk.services.firehose.model.HiveJsonSerDe>() {
 			@Override
@@ -496,7 +561,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.ParquetSerDe translateParquetSerDe(final ParquetSerDe parquetSerDe) {
+	static software.amazon.awssdk.services.firehose.model.ParquetSerDe translateParquetSerDe(final ParquetSerDe parquetSerDe) {
 		if(parquetSerDe == null) return null;
 		return software.amazon.awssdk.services.firehose.model.ParquetSerDe.builder()
 				.blockSizeBytes(parquetSerDe.getBlockSizeBytes())
@@ -508,7 +573,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.ParquetSerDe> translateParquetSerDeCollection(final Collection<ParquetSerDe> parquetSerDeCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.ParquetSerDe> translateParquetSerDeCollection(final Collection<ParquetSerDe> parquetSerDeCollection) {
 		if(parquetSerDeCollection == null) return null;
 		return Collections2.transform(parquetSerDeCollection, new Function<ParquetSerDe, software.amazon.awssdk.services.firehose.model.ParquetSerDe>() {
 			@Override
@@ -518,7 +583,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.OrcSerDe translateOrcSerDe(final OrcSerDe orcSerDe) {
+	static software.amazon.awssdk.services.firehose.model.OrcSerDe translateOrcSerDe(final OrcSerDe orcSerDe) {
 		if(orcSerDe == null) return null;
 		return software.amazon.awssdk.services.firehose.model.OrcSerDe.builder()
 				.stripeSizeBytes(orcSerDe.getStripeSizeBytes())
@@ -534,7 +599,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.OrcSerDe> translateOrcSerDeCollection(final Collection<OrcSerDe> orcSerDeCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.OrcSerDe> translateOrcSerDeCollection(final Collection<OrcSerDe> orcSerDeCollection) {
 		if(orcSerDeCollection == null) return null;
 		return Collections2.transform(orcSerDeCollection, new Function<OrcSerDe, software.amazon.awssdk.services.firehose.model.OrcSerDe>() {
 			@Override
@@ -544,7 +609,7 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.SplunkDestinationConfiguration translateSplunkDestinationConfiguration(final SplunkDestinationConfiguration splunkDestinationConfiguration) {
+	static software.amazon.awssdk.services.firehose.model.SplunkDestinationConfiguration translateSplunkDestinationConfiguration(final SplunkDestinationConfiguration splunkDestinationConfiguration) {
 		if(splunkDestinationConfiguration == null) return null;
 		return software.amazon.awssdk.services.firehose.model.SplunkDestinationConfiguration.builder()
 				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(splunkDestinationConfiguration.getCloudWatchLoggingOptions()))
@@ -559,7 +624,7 @@ class HandlerUtils {
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.SplunkDestinationConfiguration> translateSplunkDestinationConfigurationCollection(final Collection<SplunkDestinationConfiguration> splunkDestinationConfigurationCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.SplunkDestinationConfiguration> translateSplunkDestinationConfigurationCollection(final Collection<SplunkDestinationConfiguration> splunkDestinationConfigurationCollection) {
 		if(splunkDestinationConfigurationCollection == null) return null;
 		return Collections2.transform(splunkDestinationConfigurationCollection, new Function<SplunkDestinationConfiguration, software.amazon.awssdk.services.firehose.model.SplunkDestinationConfiguration>() {
 			@Override
@@ -569,14 +634,14 @@ class HandlerUtils {
 		});
 	}
 
-	 static software.amazon.awssdk.services.firehose.model.SplunkRetryOptions translateSplunkRetryOptions(final SplunkRetryOptions splunkRetryOptions) {
+	static software.amazon.awssdk.services.firehose.model.SplunkRetryOptions translateSplunkRetryOptions(final SplunkRetryOptions splunkRetryOptions) {
 		if(splunkRetryOptions == null) return null;
 		return software.amazon.awssdk.services.firehose.model.SplunkRetryOptions.builder()
 				.durationInSeconds(splunkRetryOptions.getDurationInSeconds())
 				.build();
 	}
 
-	 static Collection<software.amazon.awssdk.services.firehose.model.SplunkRetryOptions> translateSplunkRetryOptionsCollection(final Collection<SplunkRetryOptions> splunkRetryOptionsCollection) {
+	static Collection<software.amazon.awssdk.services.firehose.model.SplunkRetryOptions> translateSplunkRetryOptionsCollection(final Collection<SplunkRetryOptions> splunkRetryOptionsCollection) {
 		if(splunkRetryOptionsCollection == null) return null;
 		return Collections2.transform(splunkRetryOptionsCollection, new Function<SplunkRetryOptions, software.amazon.awssdk.services.firehose.model.SplunkRetryOptions>() {
 			@Override
@@ -674,6 +739,21 @@ class HandlerUtils {
 				.build();
 	}
 
+	static HttpEndpointDestinationUpdate translateHttpEndpointDestinationUpdate(final HttpEndpointDestinationConfiguration httpEndpointDestinationConfiguration) {
+		if(httpEndpointDestinationConfiguration == null) return null;
+		return HttpEndpointDestinationUpdate.builder()
+				.requestConfiguration(translateHttpEndpointRequestConfiguration(httpEndpointDestinationConfiguration.getRequestConfiguration()))
+				.endpointConfiguration(translateHttpEndpointConfiguration(httpEndpointDestinationConfiguration.getEndpointConfiguration()))
+				.bufferingHints(translateHttpEndpointBufferingHints(httpEndpointDestinationConfiguration.getBufferingHints()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(httpEndpointDestinationConfiguration.getCloudWatchLoggingOptions()))
+				.processingConfiguration(translateProcessingConfiguration(httpEndpointDestinationConfiguration.getProcessingConfiguration()))
+				.retryOptions(translateHttpEndpointRetryOptions(httpEndpointDestinationConfiguration.getRetryOptions()))
+				.s3BackupMode(httpEndpointDestinationConfiguration.getS3BackupMode())
+				.s3Update(translateS3DestinationUpdate(httpEndpointDestinationConfiguration.getS3Configuration()))
+				.roleARN(httpEndpointDestinationConfiguration.getRoleARN())
+				.build();
+	}
+
 	static S3DestinationConfiguration translateS3DestinationConfigurationToCfnModel(final S3DestinationDescription s3DestinationDescription) {
 		return s3DestinationDescription == null ? null : S3DestinationConfiguration.builder()
 				.bucketARN(s3DestinationDescription.bucketARN())
@@ -766,6 +846,53 @@ class HandlerUtils {
 				.build();
 	}
 
+	static HttpEndpointDestinationConfiguration translateHttpEndpointDestinationConfigurationToCfnModel(final HttpEndpointDestinationDescription httpEndpointDestinationDescription) {
+		return httpEndpointDestinationDescription == null ? null : HttpEndpointDestinationConfiguration.builder()
+				.bufferingHints(translateBufferingHintsToCfnModel(httpEndpointDestinationDescription.bufferingHints()))
+				.cloudWatchLoggingOptions(translateCloudWatchLoggingOptionsToCfnModel(httpEndpointDestinationDescription.cloudWatchLoggingOptions()))
+				.endpointConfiguration(translateHttpEndpointConfigurationToCfnModel(httpEndpointDestinationDescription.endpointConfiguration()))
+				.processingConfiguration(translateProcessingConfigurationToCfnModel(httpEndpointDestinationDescription.processingConfiguration()))
+				.retryOptions(httpEndpointDestinationDescription.retryOptions() == null ? null : RetryOptions.builder()
+						.durationInSeconds(httpEndpointDestinationDescription.retryOptions().durationInSeconds())
+						.build())
+				.roleARN(httpEndpointDestinationDescription.roleARN())
+				.requestConfiguration(translateHttpEndpointRequestConfigurationToCfnModel(httpEndpointDestinationDescription.requestConfiguration()))
+				.s3BackupMode(httpEndpointDestinationDescription.s3BackupModeAsString())
+				.s3Configuration(translateS3DestinationConfigurationToCfnModel(httpEndpointDestinationDescription.s3DestinationDescription()))
+				.build();
+	}
+
+	static HttpEndpointConfiguration translateHttpEndpointConfigurationToCfnModel(
+			final software.amazon.awssdk.services.firehose.model.HttpEndpointDescription httpEndpointConfiguration) {
+		if (httpEndpointConfiguration == null) {
+			return null;
+		}
+		return HttpEndpointConfiguration.builder()
+				.name(httpEndpointConfiguration.name())
+				.url(httpEndpointConfiguration.url())
+				.build();
+	}
+
+	static com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointRequestConfiguration translateHttpEndpointRequestConfigurationToCfnModel(
+			final software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration httpEndpointRequestConfiguration) {
+		if (httpEndpointRequestConfiguration == null) {
+			return null;
+		}
+		return com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointRequestConfiguration.builder()
+				.contentEncoding(httpEndpointRequestConfiguration.contentEncodingAsString())
+				.commonAttributes(Optional.ofNullable(httpEndpointRequestConfiguration.commonAttributes())
+						.map(cas -> cas.stream()
+								.map(ca -> com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointCommonAttribute.builder()
+										.attributeName(ca.attributeName())
+										.attributeValue(ca.attributeValue())
+										.build())
+								.collect(Collectors.toList())
+						)
+						.orElse(null)
+				)
+				.build();
+	}
+
 	static DataFormatConversionConfiguration translateDataFormatConversionConfigurationToCfnModel(
 			final software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration dataFormatConversionConfiguration) {
 		if (dataFormatConversionConfiguration == null) {
@@ -801,26 +928,26 @@ class HandlerUtils {
 				.serializer(Serializer.builder()
 						.parquetSerDe(serializer.parquetSerDe() == null ? null
 								: ParquetSerDe.builder()
-								        .blockSizeBytes(serializer.parquetSerDe().blockSizeBytes())
-								        .compression(serializer.parquetSerDe().compressionAsString())
-								        .enableDictionaryCompression(serializer.parquetSerDe().enableDictionaryCompression())
-								        .maxPaddingBytes(serializer.parquetSerDe().maxPaddingBytes())
-								        .pageSizeBytes(serializer.parquetSerDe().pageSizeBytes())
-								        .writerVersion(serializer.parquetSerDe().writerVersionAsString())
-								        .build())
+								.blockSizeBytes(serializer.parquetSerDe().blockSizeBytes())
+								.compression(serializer.parquetSerDe().compressionAsString())
+								.enableDictionaryCompression(serializer.parquetSerDe().enableDictionaryCompression())
+								.maxPaddingBytes(serializer.parquetSerDe().maxPaddingBytes())
+								.pageSizeBytes(serializer.parquetSerDe().pageSizeBytes())
+								.writerVersion(serializer.parquetSerDe().writerVersionAsString())
+								.build())
 						.orcSerDe(serializer.orcSerDe() == null ? null
 								: OrcSerDe.builder()
-								        .blockSizeBytes(serializer.orcSerDe().blockSizeBytes())
-								        .bloomFilterColumns(serializer.orcSerDe().bloomFilterColumns())
-								        .bloomFilterFalsePositiveProbability(serializer.orcSerDe().bloomFilterFalsePositiveProbability())
-								        .compression(serializer.orcSerDe().compressionAsString())
-								        .dictionaryKeyThreshold(serializer.orcSerDe().dictionaryKeyThreshold())
-								        .enablePadding(serializer.orcSerDe().enablePadding())
-								        .formatVersion(serializer.orcSerDe().formatVersionAsString())
-								        .paddingTolerance(serializer.orcSerDe().paddingTolerance())
-								        .rowIndexStride(serializer.orcSerDe().rowIndexStride())
-								        .stripeSizeBytes(serializer.orcSerDe().stripeSizeBytes())
-								        .build())
+								.blockSizeBytes(serializer.orcSerDe().blockSizeBytes())
+								.bloomFilterColumns(serializer.orcSerDe().bloomFilterColumns())
+								.bloomFilterFalsePositiveProbability(serializer.orcSerDe().bloomFilterFalsePositiveProbability())
+								.compression(serializer.orcSerDe().compressionAsString())
+								.dictionaryKeyThreshold(serializer.orcSerDe().dictionaryKeyThreshold())
+								.enablePadding(serializer.orcSerDe().enablePadding())
+								.formatVersion(serializer.orcSerDe().formatVersionAsString())
+								.paddingTolerance(serializer.orcSerDe().paddingTolerance())
+								.rowIndexStride(serializer.orcSerDe().rowIndexStride())
+								.stripeSizeBytes(serializer.orcSerDe().stripeSizeBytes())
+								.build())
 						.build())
 				.build();
 	}
@@ -850,16 +977,16 @@ class HandlerUtils {
 				.enabled(processingConfiguration.enabled())
 				.processors(processingConfiguration.hasProcessors()
 						? processingConfiguration.processors()
-						    .stream().map(processor -> Processor.builder()
+						.stream().map(processor -> Processor.builder()
 								.parameters(processor.hasParameters()
 										? processor.parameters().stream().map(p -> ProcessorParameter.builder()
-										    .parameterName(p.parameterNameAsString())
-										    .parameterValue(p.parameterValue())
-										    .build()).collect(Collectors.toList())
+										.parameterName(p.parameterNameAsString())
+										.parameterValue(p.parameterValue())
+										.build()).collect(Collectors.toList())
 										: null)
 								.type(processor.typeAsString())
 								.build())
-						    .collect(Collectors.toList())
+						.collect(Collectors.toList())
 						: null)
 				.build();
 	}
@@ -889,6 +1016,13 @@ class HandlerUtils {
 				.build();
 	}
 
+	static BufferingHints translateBufferingHintsToCfnModel(final software.amazon.awssdk.services.firehose.model.HttpEndpointBufferingHints bufferingHints) {
+		return bufferingHints == null ? null : BufferingHints.builder()
+				.intervalInSeconds(bufferingHints.intervalInSeconds())
+				.sizeInMBs(bufferingHints.sizeInMBs())
+				.build();
+	}
+
 	static KinesisStreamSourceConfiguration translateKinesisStreamSourceConfigurationToCfnModel(
 			final SourceDescription sourceDescription) {
 		if (sourceDescription == null) {
@@ -901,16 +1035,16 @@ class HandlerUtils {
 				.build();
 	}
 
-    static VpcConfiguration translateVpcConfigurationToCfnModel(VpcConfigurationDescription vpcConfiguration) {
-        if (vpcConfiguration == null) {
-            return null;
-        }
-        return VpcConfiguration.builder()
-                .roleARN(vpcConfiguration.roleARN())
-                .subnetIds(vpcConfiguration.subnetIds())
-                .securityGroupIds(vpcConfiguration.securityGroupIds())
-                .build();
-    }
+	static VpcConfiguration translateVpcConfigurationToCfnModel(VpcConfigurationDescription vpcConfiguration) {
+		if (vpcConfiguration == null) {
+			return null;
+		}
+		return VpcConfiguration.builder()
+				.roleARN(vpcConfiguration.roleARN())
+				.subnetIds(vpcConfiguration.subnetIds())
+				.securityGroupIds(vpcConfiguration.securityGroupIds())
+				.build();
+	}
 
 	static boolean doesDeliveryStreamExistWithName(ResourceModel model,
 												   AmazonWebServicesClientProxy clientProxy,

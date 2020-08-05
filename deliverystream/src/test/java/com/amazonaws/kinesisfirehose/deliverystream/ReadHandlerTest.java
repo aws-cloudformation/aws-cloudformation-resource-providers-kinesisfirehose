@@ -461,6 +461,45 @@ public class ReadHandlerTest {
     }
 
     @Test
+    public void testReadHttpEndpointConfiguration() {
+        ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+                .desiredResourceState(model)
+                .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+                .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                        .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE)
+                        .deliveryStreamARN(DELIVERY_STREAM_NAME_ARN)
+                        .deliveryStreamName(DELIVERY_STREAM_NAME)
+                        .deliveryStreamType(DELIVERY_STREAM_TYPE)
+                        .source(SourceDescription.builder().kinesisStreamSourceDescription(KINESIS_STREAM_SOURCE_DESCRIPTION_RESPONSE).build())
+                        .destinations(ImmutableList.of(DestinationDescription.builder()
+                                .httpEndpointDestinationDescription(HTTP_ENDPOINT_DESTINATION_DESCRIPTION)
+                                .build()))
+                        .build())
+                .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
+                .thenReturn(describeResponse);
+
+        val response = new ReadHandler().handleRequest(
+                proxy, request, null, logger);
+        val resourceModel = response.getResourceModel();
+        val httpConfig = resourceModel.getHttpEndpointDestinationConfiguration();
+        val endpointConfig = httpConfig.getEndpointConfiguration();
+        assertThat(endpointConfig.getName()).isEqualTo(ENDPOINT_NAME);
+        assertThat(endpointConfig.getUrl()).isEqualTo(ENDPOINT_URL);
+        val requestConfig = httpConfig.getRequestConfiguration();
+        assertThat(requestConfig.getContentEncoding()).isEqualTo(CONTENT_ENCODE);
+        assertThat(requestConfig.getCommonAttributes().get(0).getAttributeName()).isEqualTo(ATTRIBUTE_NAME);
+        assertThat(requestConfig.getCommonAttributes().get(0).getAttributeValue()).isEqualTo(ATTRIBUTE_VALUE);
+        validateCloudWatchConfig(httpConfig.getCloudWatchLoggingOptions());
+        validateProcessingConfiguration(httpConfig.getProcessingConfiguration());
+        validateS3Configuration(httpConfig.getS3Configuration());
+    }
+
+    @Test
     public void testResourceNotFound() {
         ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
