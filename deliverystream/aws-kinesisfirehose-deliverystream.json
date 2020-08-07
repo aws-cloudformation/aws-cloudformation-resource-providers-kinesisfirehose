@@ -8,8 +8,8 @@
     },
     "DeliveryStreamName": {
       "type": "string",
-      "minimum": 1,
-      "maximum": 64,
+      "minLength": 1,
+      "maxLength": 64,
       "pattern": "[a-zA-Z0-9._-]+"
     },
     "DeliveryStreamType": {
@@ -53,8 +53,8 @@
         },
         "HECEndpoint": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 2048
+          "minLength": 0,
+          "maxLength": 2048
         },
         "HECEndpointType": {
           "type": "string",
@@ -65,8 +65,8 @@
         },
         "HECToken": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 2048
+          "minLength": 0,
+          "maxLength": 2048
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
@@ -94,14 +94,14 @@
       "properties": {
         "KinesisStreamARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxlength": 512,
           "pattern": "arn:.*"
         }
       },
@@ -116,8 +116,8 @@
       "properties": {
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "SubnetIds": {
@@ -125,8 +125,8 @@
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "minimum": 1,
-            "maximum": 1024
+            "minLength": 1,
+            "maxLength": 1024
           },
           "minItems": 1,
           "maxItems": 16
@@ -136,8 +136,8 @@
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "minimum": 1,
-            "maximum": 1024
+            "minLength": 1,
+            "maxLength": 1024
           },
           "minItems": 1,
           "maxItems": 5
@@ -155,8 +155,8 @@
       "properties": {
         "BucketARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 2048,
+          "minLength": 1,
+          "maxLength": 2048,
           "pattern": "arn:.*"
         },
         "BufferingHints": {
@@ -183,21 +183,21 @@
         },
         "ErrorOutputPrefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "Prefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "S3BackupConfiguration": {
@@ -222,8 +222,8 @@
       "properties": {
         "BucketARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 2048,
+          "minLength": 1,
+          "maxLength": 2048,
           "pattern": "arn:.*"
         },
         "BufferingHints": {
@@ -247,18 +247,18 @@
         },
         "ErrorOutputPrefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "Prefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         }
       },
@@ -276,16 +276,16 @@
         },
         "ClusterJDBCURL": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512
+          "minLength": 1,
+          "maxLength": 512
         },
         "CopyCommand": {
           "$ref": "#/definitions/CopyCommand"
         },
         "Password": {
           "type": "string",
-          "minimum": 6,
-          "maximum": 512
+          "minLength": 6,
+          "maxLength": 512
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
@@ -295,8 +295,8 @@
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "S3BackupConfiguration": {
@@ -314,8 +314,8 @@
         },
         "Username": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512
+          "minLength": 1,
+          "maxLength": 512
         }
       },
       "required": [
@@ -339,14 +339,14 @@
         },
         "DomainARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "IndexName": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 80
+          "minLength": 1,
+          "maxLength": 80
         },
         "IndexRotationPeriod": {
           "type": "string",
@@ -366,8 +366,8 @@
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "S3BackupMode": {
@@ -382,14 +382,14 @@
         },
         "ClusterEndpoint": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "https:.*"
         },
         "TypeName": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 100
+          "minLength": 0,
+          "maxLength": 100
         },
         "VpcConfiguration": {
           "$ref": "#/definitions/VpcConfiguration"
@@ -480,18 +480,18 @@
       "properties": {
         "CopyOptions": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 204800
+          "minLength": 0,
+          "maxLength": 204800
         },
         "DataTableColumns": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 204800
+          "minLength": 0,
+          "maxLength": 204800
         },
         "DataTableName": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512
+          "minLength": 1,
+          "maxLength": 512
         }
       },
       "required": [
@@ -607,8 +607,8 @@
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "TableName": {
