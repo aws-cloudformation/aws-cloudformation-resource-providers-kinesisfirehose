@@ -36,7 +36,7 @@ class HandlerUtils {
 	}
 
 	/*public static software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput translateDeliveryStreamEncryptionConfigurationInput(final DeliveryStreamEncryptionConfigurationInput deliveryStreamEncryptionConfigurationInput) {
-		if(deliveryStreamEncryptionConfigurationInput == null) returnwhere null;
+		if(deliveryStreamEncryptionConfigurationInput == null) return null;
 		return software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput.builder()
 				.keyType(deliveryStreamEncryptionConfigurationInput.getKeyType())
 				.keyARN(deliveryStreamEncryptionConfigurationInput.getKeyARN())
