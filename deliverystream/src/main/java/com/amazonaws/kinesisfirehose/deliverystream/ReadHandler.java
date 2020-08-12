@@ -33,8 +33,8 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
             return ProgressEvent.defaultSuccessHandler(returnModel);
         } catch (Exception e) {
             logger.log(String.format("Got exception for %s, error message %s",
-                    model.getDeliveryStreamName(),
-                    e.getMessage()));
+                model.getDeliveryStreamName(),
+                e.getMessage()));
             return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
         }
     }

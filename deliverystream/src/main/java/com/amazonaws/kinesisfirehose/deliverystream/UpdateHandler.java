@@ -28,8 +28,8 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         try {
             logger.log(String.format("Update Handler called with deliveryStream PrimaryId %s", model.getDeliveryStreamName()));
             val describeResponse =  clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
-                            .deliveryStreamName(model.getDeliveryStreamName())
-                            .build(),
+                    .deliveryStreamName(model.getDeliveryStreamName())
+                    .build(),
                     firehoseClient::describeDeliveryStream);
             return updateDeliveryStream(model, describeResponse, logger);
         } catch (final Exception e) {

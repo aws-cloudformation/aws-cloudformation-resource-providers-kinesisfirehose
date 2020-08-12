@@ -130,9 +130,9 @@ public class DeliveryStreamTestHelper  {
             .build();
     public static final HttpEndpointRequestConfigurationBuilder HTTP_ENDPOINT_REQUEST_CONFIGURATION = HttpEndpointRequestConfiguration.builder()
             .commonAttributes(ImmutableList.of(HttpEndpointCommonAttribute.builder()
-                    .attributeName(ATTRIBUTE_NAME)
-                    .attributeValue(ATTRIBUTE_VALUE)
-                    .build()))
+                            .attributeName(ATTRIBUTE_NAME)
+                            .attributeValue(ATTRIBUTE_VALUE)
+                            .build()))
             .contentEncoding(CONTENT_ENCODE);
     public static final HttpEndpointDestinationConfiguration HTTP_ENDPOINT_DESTINATION_CONFIGURATION = HttpEndpointDestinationConfiguration.builder()
             .requestConfiguration(HTTP_ENDPOINT_REQUEST_CONFIGURATION.build())
