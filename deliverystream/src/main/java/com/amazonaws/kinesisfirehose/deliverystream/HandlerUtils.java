@@ -3,12 +3,16 @@ package com.amazonaws.kinesisfirehose.deliverystream;
 import com.amazonaws.util.StringUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import lombok.val;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.*;
+import software.amazon.awssdk.services.firehose.model.HttpEndpointCommonAttribute;
+import software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 class HandlerUtils {
@@ -119,6 +123,22 @@ class HandlerUtils {
 				.sizeInMBs(bufferingHints.getSizeInMBs())
 				.build();
 	}
+
+    static software.amazon.awssdk.services.firehose.model.HttpEndpointBufferingHints translateHttpEndpointBufferingHints(
+            final BufferingHints bufferingHints) {
+        if(bufferingHints == null) return null;
+        return software.amazon.awssdk.services.firehose.model.HttpEndpointBufferingHints.builder()
+                .intervalInSeconds(bufferingHints.getIntervalInSeconds())
+                .sizeInMBs(bufferingHints.getSizeInMBs())
+                .build();
+    }
+
+    static software.amazon.awssdk.services.firehose.model.HttpEndpointRetryOptions translateHttpEndpointRetryOptions(final RetryOptions retryOptions) {
+        if(retryOptions == null) return null;
+        return software.amazon.awssdk.services.firehose.model.HttpEndpointRetryOptions.builder()
+                .durationInSeconds(retryOptions.getDurationInSeconds())
+                .build();
+    }
 
 	static Collection<software.amazon.awssdk.services.firehose.model.BufferingHints> translateBufferingHintsCollection(final Collection<BufferingHints> bufferingHintsCollection) {
 		if(bufferingHintsCollection == null) return null;
@@ -248,6 +268,51 @@ class HandlerUtils {
 				.vpcConfiguration(translateVpcConfiguration(elasticsearchDestinationConfiguration.getVpcConfiguration()))
 				.build();
 	}
+
+    static software.amazon.awssdk.services.firehose.model.HttpEndpointDestinationConfiguration translateHttpEndpointDestinationConfiguration(
+            final HttpEndpointDestinationConfiguration httpEndpointDestinationConfiguration) {
+        if(httpEndpointDestinationConfiguration == null) return null;
+        return software.amazon.awssdk.services.firehose.model.HttpEndpointDestinationConfiguration.builder()
+                .bufferingHints(translateHttpEndpointBufferingHints(httpEndpointDestinationConfiguration.getBufferingHints()))
+                .requestConfiguration(translateHttpEndpointRequestConfiguration(httpEndpointDestinationConfiguration.getRequestConfiguration()))
+                .endpointConfiguration(translateHttpEndpointConfiguration(httpEndpointDestinationConfiguration.getEndpointConfiguration()))
+                .cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(httpEndpointDestinationConfiguration.getCloudWatchLoggingOptions()))
+                .processingConfiguration(translateProcessingConfiguration(httpEndpointDestinationConfiguration.getProcessingConfiguration()))
+                .retryOptions(translateHttpEndpointRetryOptions(httpEndpointDestinationConfiguration.getRetryOptions()))
+                .roleARN(httpEndpointDestinationConfiguration.getRoleARN())
+                .s3BackupMode(httpEndpointDestinationConfiguration.getS3BackupMode())
+                .s3Configuration(translateS3DestinationConfiguration(httpEndpointDestinationConfiguration.getS3Configuration()))
+                .build();
+    }
+
+    static software.amazon.awssdk.services.firehose.model.HttpEndpointConfiguration translateHttpEndpointConfiguration(
+            final com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointConfiguration httpEndpointConfiguration) {
+        if(httpEndpointConfiguration == null) return null;
+        return software.amazon.awssdk.services.firehose.model.HttpEndpointConfiguration.builder()
+                .accessKey(httpEndpointConfiguration.getAccessKey())
+                .name(httpEndpointConfiguration.getName())
+                .url(httpEndpointConfiguration.getUrl())
+                .build();
+    }
+
+    static software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration translateHttpEndpointRequestConfiguration(
+            final com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointRequestConfiguration httpEndpointDestinationConfiguration) {
+        if(httpEndpointDestinationConfiguration == null) return null;
+        return software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration.builder()
+                .commonAttributes(Optional.ofNullable(httpEndpointDestinationConfiguration.getCommonAttributes())
+                        .map(cas -> cas.stream()
+                                .map(ca -> HttpEndpointCommonAttribute.builder()
+                                        .attributeName(ca.getAttributeName())
+                                        .attributeValue(ca.getAttributeValue())
+                                        .build())
+                                .collect(Collectors.toList())
+                        ).orElse(null)
+
+                )
+                .contentEncoding(httpEndpointDestinationConfiguration.getContentEncoding() == null ? null
+                        : httpEndpointDestinationConfiguration.getContentEncoding().toString())
+                .build();
+    }
 
 	 static Collection<software.amazon.awssdk.services.firehose.model.ElasticsearchDestinationConfiguration> translateElasticsearchDestinationConfigurationCollection(final Collection<ElasticsearchDestinationConfiguration> elasticsearchDestinationConfigurationCollection) {
 		if(elasticsearchDestinationConfigurationCollection == null) return null;
@@ -674,6 +739,21 @@ class HandlerUtils {
 				.build();
 	}
 
+    static HttpEndpointDestinationUpdate translateHttpEndpointDestinationUpdate(final HttpEndpointDestinationConfiguration httpEndpointDestinationConfiguration) {
+        if(httpEndpointDestinationConfiguration == null) return null;
+        return HttpEndpointDestinationUpdate.builder()
+                .requestConfiguration(translateHttpEndpointRequestConfiguration(httpEndpointDestinationConfiguration.getRequestConfiguration()))
+                .endpointConfiguration(translateHttpEndpointConfiguration(httpEndpointDestinationConfiguration.getEndpointConfiguration()))
+                .bufferingHints(translateHttpEndpointBufferingHints(httpEndpointDestinationConfiguration.getBufferingHints()))
+                .cloudWatchLoggingOptions(translateCloudWatchLoggingOptions(httpEndpointDestinationConfiguration.getCloudWatchLoggingOptions()))
+                .processingConfiguration(translateProcessingConfiguration(httpEndpointDestinationConfiguration.getProcessingConfiguration()))
+                .retryOptions(translateHttpEndpointRetryOptions(httpEndpointDestinationConfiguration.getRetryOptions()))
+                .s3BackupMode(httpEndpointDestinationConfiguration.getS3BackupMode())
+                .s3Update(translateS3DestinationUpdate(httpEndpointDestinationConfiguration.getS3Configuration()))
+                .roleARN(httpEndpointDestinationConfiguration.getRoleARN())
+                .build();
+    }
+
 	static S3DestinationConfiguration translateS3DestinationConfigurationToCfnModel(final S3DestinationDescription s3DestinationDescription) {
 		return s3DestinationDescription == null ? null : S3DestinationConfiguration.builder()
 				.bucketARN(s3DestinationDescription.bucketARN())
@@ -765,6 +845,53 @@ class HandlerUtils {
 				.s3Configuration(translateS3DestinationConfigurationToCfnModel(splunkDestinationDescription.s3DestinationDescription()))
 				.build();
 	}
+
+    static HttpEndpointDestinationConfiguration translateHttpEndpointDestinationConfigurationToCfnModel(final HttpEndpointDestinationDescription httpEndpointDestinationDescription) {
+        return httpEndpointDestinationDescription == null ? null : HttpEndpointDestinationConfiguration.builder()
+                .bufferingHints(translateBufferingHintsToCfnModel(httpEndpointDestinationDescription.bufferingHints()))
+                .cloudWatchLoggingOptions(translateCloudWatchLoggingOptionsToCfnModel(httpEndpointDestinationDescription.cloudWatchLoggingOptions()))
+                .endpointConfiguration(translateHttpEndpointConfigurationToCfnModel(httpEndpointDestinationDescription.endpointConfiguration()))
+                .processingConfiguration(translateProcessingConfigurationToCfnModel(httpEndpointDestinationDescription.processingConfiguration()))
+                .retryOptions(httpEndpointDestinationDescription.retryOptions() == null ? null : RetryOptions.builder()
+                        .durationInSeconds(httpEndpointDestinationDescription.retryOptions().durationInSeconds())
+                        .build())
+                .roleARN(httpEndpointDestinationDescription.roleARN())
+                .requestConfiguration(translateHttpEndpointRequestConfigurationToCfnModel(httpEndpointDestinationDescription.requestConfiguration()))
+                .s3BackupMode(httpEndpointDestinationDescription.s3BackupModeAsString())
+                .s3Configuration(translateS3DestinationConfigurationToCfnModel(httpEndpointDestinationDescription.s3DestinationDescription()))
+                .build();
+    }
+
+    static HttpEndpointConfiguration translateHttpEndpointConfigurationToCfnModel(
+            final software.amazon.awssdk.services.firehose.model.HttpEndpointDescription httpEndpointConfiguration) {
+        if (httpEndpointConfiguration == null) {
+            return null;
+        }
+        return HttpEndpointConfiguration.builder()
+                .name(httpEndpointConfiguration.name())
+                .url(httpEndpointConfiguration.url())
+                .build();
+    }
+
+    static com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointRequestConfiguration translateHttpEndpointRequestConfigurationToCfnModel(
+            final software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration httpEndpointRequestConfiguration) {
+        if (httpEndpointRequestConfiguration == null) {
+            return null;
+        }
+        return com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointRequestConfiguration.builder()
+                .contentEncoding(httpEndpointRequestConfiguration.contentEncodingAsString())
+                .commonAttributes(Optional.ofNullable(httpEndpointRequestConfiguration.commonAttributes())
+                        .map(cas -> cas.stream()
+                                .map(ca -> com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointCommonAttribute.builder()
+                                        .attributeName(ca.attributeName())
+                                        .attributeValue(ca.attributeValue())
+                                        .build())
+                                .collect(Collectors.toList())
+                        )
+                        .orElse(null)
+                )
+                .build();
+    }
 
 	static DataFormatConversionConfiguration translateDataFormatConversionConfigurationToCfnModel(
 			final software.amazon.awssdk.services.firehose.model.DataFormatConversionConfiguration dataFormatConversionConfiguration) {
@@ -888,6 +1015,13 @@ class HandlerUtils {
 				.sizeInMBs(bufferingHints.sizeInMBs())
 				.build();
 	}
+
+    static BufferingHints translateBufferingHintsToCfnModel(final software.amazon.awssdk.services.firehose.model.HttpEndpointBufferingHints bufferingHints) {
+        return bufferingHints == null ? null : BufferingHints.builder()
+                .intervalInSeconds(bufferingHints.intervalInSeconds())
+                .sizeInMBs(bufferingHints.sizeInMBs())
+                .build();
+    }
 
 	static KinesisStreamSourceConfiguration translateKinesisStreamSourceConfigurationToCfnModel(
 			final SourceDescription sourceDescription) {

@@ -19,3 +19,5 @@ target/
 
 # our logs
 rpdk.log
+docs/
+rpdk.log.1

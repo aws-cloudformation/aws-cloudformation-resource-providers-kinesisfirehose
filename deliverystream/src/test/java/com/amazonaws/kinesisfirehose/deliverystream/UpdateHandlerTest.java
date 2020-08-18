@@ -17,11 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.DELIVERY_STREAM_NAME;
-import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL;
-import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.EXTENDED_S3_DESTINATION_CONFIGURATION_FULL;
-import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.REDSHIFT_DESTINATION_CONFIGURATION;
-import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.SPLUNK_CONFIGURATION_FULL;
+import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -203,6 +199,48 @@ public class UpdateHandlerTest {
         assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
         assertThat(response.getResourceModel().getSplunkDestinationConfiguration())
                 .isEqualToComparingFieldByField(SPLUNK_CONFIGURATION_FULL);
+        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+    }
+
+    @Test
+    public void testUpdateDeliverySteamWithHttpEndpointConfiguration() {
+        final ResourceModel model = ResourceModel.builder()
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
+                .httpEndpointDestinationConfiguration(HTTP_ENDPOINT_DESTINATION_CONFIGURATION)
+                .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+                .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                        .deliveryStreamName(DELIVERY_STREAM_NAME)
+                        .versionId("version-0001")
+                        .destinations(DestinationDescription.builder()
+                                .destinationId("destination-0001")
+                                .build())
+                        .build())
+                .build();
+        final UpdateDestinationResponse updateResponse = UpdateDestinationResponse.builder()
+                .build();
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+                any())).thenReturn(describeResponse);
+        doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+                any());
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+                .desiredResourceState(model)
+                .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+                = handler.handleRequest(proxy, request, null, logger);
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getHttpEndpointDestinationConfiguration())
+                .isEqualToComparingFieldByField(HTTP_ENDPOINT_DESTINATION_CONFIGURATION);
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
         assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
         assertThat(response.getResourceModels()).isNull();

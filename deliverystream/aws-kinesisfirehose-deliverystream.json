@@ -8,8 +8,8 @@
     },
     "DeliveryStreamName": {
       "type": "string",
-      "minimum": 1,
-      "maximum": 64,
+      "minLength": 1,
+      "maxLength": 64,
       "pattern": "[a-zA-Z0-9._-]+"
     },
     "DeliveryStreamType": {
@@ -36,6 +36,9 @@
     },
     "SplunkDestinationConfiguration": {
       "$ref": "#/definitions/SplunkDestinationConfiguration"
+    },
+    "HttpEndpointDestinationConfiguration": {
+      "$ref": "#/definitions/HttpEndpointDestinationConfiguration"
     }
   },
   "definitions": {
@@ -53,8 +56,8 @@
         },
         "HECEndpoint": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 2048
+          "minLength": 0,
+          "maxLength": 2048
         },
         "HECEndpointType": {
           "type": "string",
@@ -65,8 +68,8 @@
         },
         "HECToken": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 2048
+          "minLength": 0,
+          "maxLength": 2048
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
@@ -88,20 +91,60 @@
         "HECEndpointType"
       ]
     },
+    "HttpEndpointDestinationConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "RoleARN": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "arn:.*"
+        },
+        "EndpointConfiguration": {
+          "$ref": "#/definitions/HttpEndpointConfiguration"
+        },
+        "RequestConfiguration": {
+          "$ref": "#/definitions/HttpEndpointRequestConfiguration"
+        },
+        "BufferingHints": {
+          "$ref": "#/definitions/BufferingHints"
+        },
+        "CloudWatchLoggingOptions": {
+          "$ref": "#/definitions/CloudWatchLoggingOptions"
+        },
+        "ProcessingConfiguration": {
+          "$ref": "#/definitions/ProcessingConfiguration"
+        },
+        "RetryOptions": {
+          "$ref": "#/definitions/RetryOptions"
+        },
+        "S3BackupMode": {
+          "type": "string"
+        },
+        "S3Configuration": {
+          "$ref": "#/definitions/S3DestinationConfiguration"
+        }
+      },
+      "required": [
+        "EndpointConfiguration",
+        "S3Configuration"
+      ]
+    },
     "KinesisStreamSourceConfiguration": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "KinesisStreamARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         }
       },
@@ -116,8 +159,8 @@
       "properties": {
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "SubnetIds": {
@@ -125,8 +168,8 @@
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "minimum": 1,
-            "maximum": 1024
+            "minLength": 1,
+            "maxLength": 1024
           },
           "minItems": 1,
           "maxItems": 16
@@ -136,8 +179,8 @@
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "minimum": 1,
-            "maximum": 1024
+            "minLength": 1,
+            "maxLength": 1024
           },
           "minItems": 1,
           "maxItems": 5
@@ -155,8 +198,8 @@
       "properties": {
         "BucketARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 2048,
+          "minLength": 1,
+          "maxLength": 2048,
           "pattern": "arn:.*"
         },
         "BufferingHints": {
@@ -183,21 +226,21 @@
         },
         "ErrorOutputPrefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "Prefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "S3BackupConfiguration": {
@@ -222,8 +265,8 @@
       "properties": {
         "BucketARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 2048,
+          "minLength": 1,
+          "maxLength": 2048,
           "pattern": "arn:.*"
         },
         "BufferingHints": {
@@ -247,18 +290,18 @@
         },
         "ErrorOutputPrefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "Prefix": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 1024
+          "minLength": 0,
+          "maxLength": 1024
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         }
       },
@@ -276,16 +319,16 @@
         },
         "ClusterJDBCURL": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512
+          "minLength": 1,
+          "maxLength": 512
         },
         "CopyCommand": {
           "$ref": "#/definitions/CopyCommand"
         },
         "Password": {
           "type": "string",
-          "minimum": 6,
-          "maximum": 512
+          "minLength": 6,
+          "maxLength": 512
         },
         "ProcessingConfiguration": {
           "$ref": "#/definitions/ProcessingConfiguration"
@@ -295,8 +338,8 @@
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "S3BackupConfiguration": {
@@ -314,8 +357,8 @@
         },
         "Username": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512
+          "minLength": 1,
+          "maxLength": 512
         }
       },
       "required": [
@@ -339,14 +382,14 @@
         },
         "DomainARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "IndexName": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 80
+          "minLength": 1,
+          "maxLength": 80
         },
         "IndexRotationPeriod": {
           "type": "string",
@@ -366,8 +409,8 @@
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "S3BackupMode": {
@@ -382,14 +425,14 @@
         },
         "ClusterEndpoint": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "https:.*"
         },
         "TypeName": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 100
+          "minLength": 0,
+          "maxLength": 100
         },
         "VpcConfiguration": {
           "$ref": "#/definitions/VpcConfiguration"
@@ -456,6 +499,15 @@
         }
       }
     },
+    "RetryOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "DurationInSeconds": {
+          "type": "integer"
+        }
+      }
+    },
     "DataFormatConversionConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -480,18 +532,18 @@
       "properties": {
         "CopyOptions": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 204800
+          "minLength": 0,
+          "maxLength": 204800
         },
         "DataTableColumns": {
           "type": "string",
-          "minimum": 0,
-          "maximum": 204800
+          "minLength": 0,
+          "maxLength": 204800
         },
         "DataTableName": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512
+          "minLength": 1,
+          "maxLength": 512
         }
       },
       "required": [
@@ -607,8 +659,8 @@
         },
         "RoleARN": {
           "type": "string",
-          "minimum": 1,
-          "maximum": 512,
+          "minLength": 1,
+          "maxLength": 512,
           "pattern": "arn:.*"
         },
         "TableName": {
@@ -755,6 +807,72 @@
           "type": "boolean"
         }
       }
+    },
+    "HttpEndpointRequestConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ContentEncoding": {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "GZIP"
+          ]
+        },
+        "CommonAttributes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/HttpEndpointCommonAttribute"
+          },
+          "minItems": 0,
+          "maxItems": 50
+        }
+      }
+    },
+    "HttpEndpointCommonAttribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "AttributeName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "AttributeValue": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1024
+        }
+      },
+      "required": [
+        "AttributeName",
+        "AttributeValue"
+      ]
+    },
+    "HttpEndpointConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "AccessKey": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4096
+        },
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "Url"
+      ]
     }
   },
   "handlers": {

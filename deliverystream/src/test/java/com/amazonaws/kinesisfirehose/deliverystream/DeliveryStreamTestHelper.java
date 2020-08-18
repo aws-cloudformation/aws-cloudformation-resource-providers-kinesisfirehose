@@ -7,6 +7,7 @@ import software.amazon.awssdk.services.firehose.model.HiveJsonSerDe;
 import software.amazon.awssdk.services.firehose.model.OrcSerDe;
 import software.amazon.awssdk.services.firehose.model.Processor;
 import software.amazon.awssdk.services.firehose.model.ProcessorParameter;
+import com.amazonaws.kinesisfirehose.deliverystream.HttpEndpointRequestConfiguration.HttpEndpointRequestConfigurationBuilder;
 
 import java.util.Collections;
 
@@ -39,18 +40,19 @@ public class DeliveryStreamTestHelper  {
     public static final String DELIVERY_STREAM_NAME_ARN = "arn:aws:firehose:us-east-1:900582091538:deliverystream/" + DELIVERY_STREAM_NAME;
     public static final String DELIVERY_STREAM_NAME_ARN_UPDATED = "arn:aws:firehose:us-east-1:900582091538:deliverystream/" + DELIVERY_STREAM_NAME_UPDATED;
     public static final String DELIVERY_STREAM_TYPE = "streamType";
-    public static final String DELIVERY_STREAM_TYPE_UPDATED = "streamTypeUpdated";
+    public static final String ATTRIBUTE_NAME = "NAME";
+    public static final String ATTRIBUTE_VALUE= "VALUE";
+    public static final String ENDPOINT_URL = "https://test.com";
+    public static final String ACCESS_KEY = "ACCESS_KEY";
+    public static final String ENDPOINT_NAME = "NAME";
+    public static final String CONTENT_ENCODE = "NONE";
 
-    public static final ResourceModel RESOURCE_UNNAMED = new ResourceModel(null, null, null, null, null,  null, null, S3_DESTINATION_CONFIG, null);
-    public static final ResourceModel RESOURCE = new ResourceModel(null, DELIVERY_STREAM_NAME, null, null, null, null, null, S3_DESTINATION_CONFIG, null);
-    public static final ResourceModel RESOURCE_UPDATED = new ResourceModel(null, DELIVERY_STREAM_NAME, null, null, null, null, null,  S3_DESTINATION_CONFIG_UPDATED, null);
 
     public static final CloudWatchLoggingOptions CLOUD_WATCH_LOGGING_OPTIONS = new CloudWatchLoggingOptions(true, "LogGroupName", "LogStreamName");
     public static final ProcessingConfiguration PROCESSING_CONFIGURATION = new ProcessingConfiguration(true, Collections.emptyList());
     public static final SplunkRetryOptions RETRY_OPTIONS = new SplunkRetryOptions(INTERVAL_IN_SECONDS);
+    public static final RetryOptions COMMON_RETRY_OPTIONS = new RetryOptions(INTERVAL_IN_SECONDS);
     public static final SplunkDestinationConfiguration SPLUNK_CONFIGURATION_FULL = new SplunkDestinationConfiguration(CLOUD_WATCH_LOGGING_OPTIONS, 60, "endpoint", "type", "token", PROCESSING_CONFIGURATION, RETRY_OPTIONS, "backup", S3_DESTINATION_CONFIG);
-    public static final ResourceModel RESOURCE_WITH_SPLUNK = new ResourceModel(null, null, null, null, null, null, null, null, SPLUNK_CONFIGURATION_FULL);
-
     public static final DataFormatConversionConfiguration DATA_FORMAT_CONVERSION_CONFIGURATION = DataFormatConversionConfiguration.builder()
             .inputFormatConfiguration(InputFormatConfiguration.builder()
                     .deserializer(Deserializer.builder()
@@ -80,8 +82,6 @@ public class DeliveryStreamTestHelper  {
 
     public static final S3DestinationConfiguration S3_DESTINATION_CONFIG_FULL = new S3DestinationConfiguration(BUCKET_ARN, BUFFERING_HINTS, CLOUD_WATCH_LOGGING_OPTIONS, COMPRESSION_FORMAT, ENCRYPTION_CONFIGURATION, PREFIX, ROLE_ARN, ERROR_OUTPUT_PREFIX);
     public static final ExtendedS3DestinationConfiguration EXTENDED_S3_DESTINATION_CONFIGURATION_FULL = new ExtendedS3DestinationConfiguration(BUCKET_ARN, BUFFERING_HINTS, CLOUD_WATCH_LOGGING_OPTIONS, COMPRESSION_FORMAT, DATA_FORMAT_CONVERSION_CONFIGURATION, ENCRYPTION_CONFIGURATION, ERROR_OUTPUT_PREFIX, PREFIX , PROCESSING_CONFIGURATION, ROLE_ARN, S3_DESTINATION_CONFIG_FULL, BACKUP_MODE);
-    public static final ResourceModel RESOURCE_WITH_S3_EXTENDED = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, EXTENDED_S3_DESTINATION_CONFIGURATION_FULL, null, null, null,  null);
-
 
     public static final String DOMAIN_ARN = "DomainArn";
     public static final String INDEX_NAME = "IndexName";
@@ -123,16 +123,43 @@ public class DeliveryStreamTestHelper  {
             CLUSTER_END_POINT,
             TYPE_NAME,
             VPC_CONFIGURATION);
-    public static final ResourceModel RESOURCE_WITH_ELASTICSEARCH = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, ELASTICSEARCH_DESTINATION_CONFIGURATION_FULL,null, null, null, null,  null);
-
+    public static final HttpEndpointConfiguration HTTP_ENDPOINT_CONFIGURATION = HttpEndpointConfiguration.builder()
+            .url(ENDPOINT_URL)
+            .accessKey(ACCESS_KEY)
+            .name(ENDPOINT_NAME)
+            .build();
+    public static final HttpEndpointRequestConfigurationBuilder HTTP_ENDPOINT_REQUEST_CONFIGURATION = HttpEndpointRequestConfiguration.builder()
+            .commonAttributes(ImmutableList.of(HttpEndpointCommonAttribute.builder()
+                            .attributeName(ATTRIBUTE_NAME)
+                            .attributeValue(ATTRIBUTE_VALUE)
+                            .build()))
+            .contentEncoding(CONTENT_ENCODE);
+    public static final HttpEndpointDestinationConfiguration HTTP_ENDPOINT_DESTINATION_CONFIGURATION = HttpEndpointDestinationConfiguration.builder()
+            .requestConfiguration(HTTP_ENDPOINT_REQUEST_CONFIGURATION.build())
+            .endpointConfiguration(HTTP_ENDPOINT_CONFIGURATION)
+            .roleARN(ROLE_ARN)
+            .bufferingHints(BUFFERING_HINTS)
+            .cloudWatchLoggingOptions(CLOUD_WATCH_LOGGING_OPTIONS)
+            .processingConfiguration(PROCESSING_CONFIGURATION)
+            .retryOptions(COMMON_RETRY_OPTIONS)
+            .s3BackupMode("AllData")
+            .s3Configuration(S3_DESTINATION_CONFIG)
+            .build();
     public static final String KINESIS_STREAM_ARN = "KinesisStreamArn";
     public static final KinesisStreamSourceConfiguration KINESIS_STREAM_SOURCE_CONFIGURATION = new KinesisStreamSourceConfiguration(KINESIS_STREAM_ARN, ROLE_ARN);
-    public static final ResourceModel RESOURCE_WITH_KINESIS = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, EXTENDED_S3_DESTINATION_CONFIGURATION_FULL, KINESIS_STREAM_SOURCE_CONFIGURATION, null,  null, null);
-
     public static final RedshiftRetryOptions REDSHIFT_RETRY_OPTIONS = new RedshiftRetryOptions(DURATION_IN_SECONDS);
-    public static final RedshiftDestinationConfiguration REDSHIFT_DESTINATION_CONFIGURATION = new RedshiftDestinationConfiguration(CLOUD_WATCH_LOGGING_OPTIONS, "ClusterJBDCurl", new CopyCommand("CopyOptions", "DataTableColumns", "DataTableName"), "Password", PROCESSING_CONFIGURATION, REDSHIFT_RETRY_OPTIONS, ROLE_ARN, S3_DESTINATION_CONFIG_FULL, BACKUP_MODE, S3_DESTINATION_CONFIG_FULL, "Username");
-    public static final ResourceModel RESOURCE_WITH_REDSHIFT = new ResourceModel(DELIVERY_STREAM_NAME_ARN, DELIVERY_STREAM_NAME, DELIVERY_STREAM_TYPE, null, null, null, REDSHIFT_DESTINATION_CONFIGURATION, null,  null);
-
+    public static final RedshiftDestinationConfiguration REDSHIFT_DESTINATION_CONFIGURATION = new RedshiftDestinationConfiguration(
+            CLOUD_WATCH_LOGGING_OPTIONS,
+            "ClusterJBDCurl",
+            new CopyCommand("CopyOptions", "DataTableColumns", "DataTableName"),
+            "Password",
+            PROCESSING_CONFIGURATION,
+            REDSHIFT_RETRY_OPTIONS,
+            ROLE_ARN,
+            S3_DESTINATION_CONFIG_FULL,
+            BACKUP_MODE,
+            S3_DESTINATION_CONFIG_FULL,
+            "Username");
     public final static software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions CLOUDWATCH_LOGGING_OPTIONS_RESPONSE =
             software.amazon.awssdk.services.firehose.model.CloudWatchLoggingOptions.builder().enabled(true).logGroupName("LogGroupName").logStreamName("LogStreamName").build();
 
@@ -269,6 +296,32 @@ public class DeliveryStreamTestHelper  {
             .hecToken("hecToken")
             .processingConfiguration(PROCESSING_CONFIGURATION_RESPONSE)
             .retryOptions(software.amazon.awssdk.services.firehose.model.SplunkRetryOptions.builder().durationInSeconds(1).build())
+            .s3BackupMode(BACKUP_MODE)
+            .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
+            .build();
+
+    public final static HttpEndpointDescription ENDPOINT_DESCRIPTION = HttpEndpointDescription.builder()
+            .name(ENDPOINT_NAME)
+            .url(ENDPOINT_URL)
+            .build();
+
+    public final static software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration REQUEST_CONFIGURATION =
+            software.amazon.awssdk.services.firehose.model.HttpEndpointRequestConfiguration.builder()
+                    .contentEncoding(ContentEncoding.fromValue(CONTENT_ENCODE))
+                    .commonAttributes(ImmutableList.of(software.amazon.awssdk.services.firehose.model.HttpEndpointCommonAttribute.builder()
+                            .attributeValue(ATTRIBUTE_VALUE)
+                            .attributeName(ATTRIBUTE_NAME)
+                            .build()))
+                    .build();
+
+    public final static HttpEndpointDestinationDescription HTTP_ENDPOINT_DESTINATION_DESCRIPTION = HttpEndpointDestinationDescription.builder()
+            .bufferingHints(HttpEndpointBufferingHints.builder().intervalInSeconds(INTERVAL_IN_SECONDS).sizeInMBs(SIZE_IN_MBS).build())
+            .cloudWatchLoggingOptions(CLOUDWATCH_LOGGING_OPTIONS_RESPONSE)
+            .endpointConfiguration(ENDPOINT_DESCRIPTION)
+            .requestConfiguration(REQUEST_CONFIGURATION)
+            .processingConfiguration(PROCESSING_CONFIGURATION_RESPONSE)
+            .retryOptions(software.amazon.awssdk.services.firehose.model.HttpEndpointRetryOptions.builder().durationInSeconds(1).build())
+            .roleARN(ROLE_ARN)
             .s3BackupMode(BACKUP_MODE)
             .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
             .build();
