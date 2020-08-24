@@ -49,6 +49,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
         model.setArn(des.deliveryStreamARN());
         model.setKinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfigurationToCfnModel(des.source()));
         model.setDeliveryStreamType(des.deliveryStreamStatusAsString());
+        model.setDeliveryStreamEncryptionConfigurationInput(HandlerUtils.translateDeliveryStreamEncryptionConfigurationInputToCfnModel(des.deliveryStreamEncryptionConfiguration()));
         return setDestinationDescription(model, des.destinations());
     }
 

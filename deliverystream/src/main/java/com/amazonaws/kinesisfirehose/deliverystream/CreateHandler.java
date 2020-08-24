@@ -4,6 +4,7 @@ import com.amazonaws.util.StringUtils;
 import com.google.common.annotations.VisibleForTesting;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamRequest;
+import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
@@ -79,7 +80,16 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
             }
         } else {
-            val currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+            // If for some reason during the stabilization phase, a call like getDeliveryStreamStatus fails, catch the exception, and
+            // retry stabilizing if more attempts are remaining.
+            String currentDeliveryStreamStatus = "";
+            try {
+                 currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+            }
+            catch (final Exception e){
+                logger.log(String.format("Error getting Delivery Stream Status. Exception %s", e.getMessage()));
+            }
+
             if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.ACTIVE.toString())) {
                 return ProgressEvent.defaultSuccessHandler(model);
             } else {
@@ -104,6 +114,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .kinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfiguration(model.getKinesisStreamSourceConfiguration()))
                 .splunkDestinationConfiguration(HandlerUtils.translateSplunkDestinationConfiguration(model.getSplunkDestinationConfiguration()))
                 .httpEndpointDestinationConfiguration(HandlerUtils.translateHttpEndpointDestinationConfiguration(model.getHttpEndpointDestinationConfiguration()))
+                .deliveryStreamEncryptionConfigurationInput(HandlerUtils.translateDeliveryStreamEncryptionConfigurationInput(model.getDeliveryStreamEncryptionConfigurationInput()))
                 .build();
 
         //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that act on a DeliveryStream

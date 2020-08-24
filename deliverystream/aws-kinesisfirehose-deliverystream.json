@@ -6,6 +6,9 @@
     "Arn": {
       "type": "string"
     },
+    "DeliveryStreamEncryptionConfigurationInput": {
+      "$ref": "#/definitions/DeliveryStreamEncryptionConfigurationInput"
+    },
     "DeliveryStreamName": {
       "type": "string",
       "minLength": 1,
@@ -42,6 +45,28 @@
     }
   },
   "definitions": {
+    "DeliveryStreamEncryptionConfigurationInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "KeyARN": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "arn:.*"
+        },
+        "KeyType": {
+          "type": "string",
+          "enum": [
+            "AWS_OWNED_CMK",
+            "CUSTOMER_MANAGED_CMK"
+          ]
+        }
+      },
+      "required": [
+        "KeyType"
+      ]
+    },
     "SplunkDestinationConfiguration": {
       "type": "object",
       "additionalProperties": false,

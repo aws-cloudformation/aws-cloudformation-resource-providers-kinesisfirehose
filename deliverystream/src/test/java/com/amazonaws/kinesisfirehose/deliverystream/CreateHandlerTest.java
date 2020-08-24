@@ -46,7 +46,7 @@ public class CreateHandlerTest {
     }
 
     @Test
-    public void testCreateDeliverySteamWithS3ExtendedConfiguration() {
+    public void testCreateDeliveryStreamWithS3ExtendedConfiguration() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
@@ -396,7 +396,7 @@ public class CreateHandlerTest {
     }
 
     @Test
-    public void testCreateDeliverySteamInProgress() {
+    public void testCreateDeliveryStreamInProgress() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
@@ -441,11 +441,12 @@ public class CreateHandlerTest {
     }
 
     @Test
-    public void testCreateDeliverySteamComplete() {
+    public void testCreateDeliveryStreamComplete() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+                .deliveryStreamEncryptionConfigurationInput(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT)
                 .build();
 
         final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
@@ -481,7 +482,7 @@ public class CreateHandlerTest {
 
 
     @Test
-    public void testCreateDeliverySteamStabilizationTimeout() {
+    public void testCreateDeliveryStreamStabilizationTimeout() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
@@ -505,7 +506,7 @@ public class CreateHandlerTest {
     }
 
     @Test
-    public void testCreateDeliverySteamAlreadyExists() {
+    public void testCreateDeliveryStreamAlreadyExists() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .deliveryStreamType(DELIVERY_STREAM_TYPE)
@@ -556,4 +557,85 @@ public class CreateHandlerTest {
 
         assertThat(CreateHandler.generateName(request3).startsWith("test-stack-test-delivery-stream")).isTrue();
     }
+
+    @Test
+    public void testCreateDeliveryStreamWithFailDescribeDS() {
+        final ResourceModel model = ResourceModel.builder()
+            .deliveryStreamName(DELIVERY_STREAM_NAME)
+            .deliveryStreamType(DELIVERY_STREAM_TYPE)
+            .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+            .deliveryStreamEncryptionConfigurationInput(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT)
+            .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+            .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE)
+                .build())
+            .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
+            .thenReturn(describeResponse);
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        final CallbackContext context = CallbackContext.builder()
+            .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES-1)
+            .deliveryStreamStatus(DeliveryStreamStatus.CREATING.toString())
+            .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+            = handler.handleRequest(proxy, request, context, logger);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+    }
+
+    @Test
+    public void testCreateDeliveryStreamWithSSEFailed() {
+        final ResourceModel model = ResourceModel.builder()
+            .deliveryStreamName(DELIVERY_STREAM_NAME)
+            .deliveryStreamType(DELIVERY_STREAM_TYPE)
+            .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+            .deliveryStreamEncryptionConfigurationInput(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT)
+            .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+            .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                .deliveryStreamStatus(DeliveryStreamStatus.CREATING_FAILED)
+                .build())
+            .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
+            .thenReturn(describeResponse);
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        final CallbackContext context = CallbackContext.builder()
+            .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES-1)
+            .deliveryStreamStatus(DeliveryStreamStatus.CREATING.toString())
+            .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+            = handler.handleRequest(proxy, request, context, logger);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+    }
+
 }

@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class CallbackContext {
 	private Integer stabilizationRetriesRemaining;
 	private String deliveryStreamStatus;
+	private String deliveryStreamEncryptionStatus;
 }
