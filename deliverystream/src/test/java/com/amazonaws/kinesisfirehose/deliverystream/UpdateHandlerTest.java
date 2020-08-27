@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.*;
+import static com.amazonaws.kinesisfirehose.deliverystream.UpdateHandler.ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT;
 import static com.amazonaws.kinesisfirehose.deliverystream.UpdateHandler.TIMED_OUT_ENCRYPTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -350,16 +351,11 @@ public class UpdateHandlerTest {
         final ProgressEvent<ResourceModel, CallbackContext> response
             = handler.handleRequest(proxy, request, callbackContext, logger);
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
-            .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
-        assertThat(response.getResourceModel().getDeliveryStreamEncryptionConfigurationInput())
-            .isEqualToComparingFieldByField(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT);
-        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
-        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getResourceModel()).isNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
         assertThat(response.getResourceModels()).isNull();
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getErrorCode()).isNull();
+        assertThat(response.getMessage()).isEqualTo(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "start");
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.InvalidRequest);
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class), any());
@@ -367,7 +363,7 @@ public class UpdateHandlerTest {
             StopDeliveryStreamEncryptionRequest.class), any());
     }
 
-    // Delivery stream from Enabling-Failed to CFN Failure due to timing out because of retry exhaustion.
+    // Delivery stream from Enabling to CFN Failure due to timing out because of retry exhaustion.
     @Test
     public void testUpdateDeliverySteamWithSSEEncryptionEnablingFailedWhenCFNTimedOut() {
         final ResourceModel model = ResourceModel.builder()
@@ -382,7 +378,7 @@ public class UpdateHandlerTest {
 
         CallbackContext callbackContext = CallbackContext.builder()
             .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE.toString())
-            .deliveryStreamEncryptionStatus(DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString())
+            .deliveryStreamEncryptionStatus(DeliveryStreamEncryptionStatus.ENABLING.toString())
             .stabilizationRetriesRemaining(0)
             .build();
         ProgressEvent<ResourceModel, CallbackContext> response=null;
@@ -658,14 +654,11 @@ public class UpdateHandlerTest {
         final ProgressEvent<ResourceModel, CallbackContext> response
             = handler.handleRequest(proxy, request, callbackContext, logger);
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
-            .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
-        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
-        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getResourceModel()).isNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
         assertThat(response.getResourceModels()).isNull();
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getErrorCode()).isNull();
+        assertThat(response.getMessage()).isEqualTo(String.format(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "stop"));
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.InvalidRequest);
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class), any());

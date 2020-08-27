@@ -7,6 +7,7 @@ import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamReques
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
+import software.amazon.awssdk.services.firehose.model.InvalidArgumentException;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
@@ -24,6 +25,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
     private static final int MAX_LENGTH_DELIVERY_STREAM_NAME = 64;
     static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream to become ACTIVE.";
+    static final String CREATE_DELIVERY_STREAM_ERROR_MSG= "Unable to Create Delivery Stream due to invalid user input";
 
     private AmazonWebServicesClientProxy clientProxy;
     private final FirehoseClient firehoseClient = FirehoseClient.create();
@@ -92,6 +94,12 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
 
             if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.ACTIVE.toString())) {
                 return ProgressEvent.defaultSuccessHandler(model);
+            } else if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.CREATING_FAILED.toString())) {
+                // Creating an InvalidArgumentException instead of InvalidKMSException since that would be too specific of a cause
+                // for CREATING_FAILED status.
+                Exception exp = InvalidArgumentException.builder()
+                    .message(CREATE_DELIVERY_STREAM_ERROR_MSG).build();
+                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp));
             } else {
                 return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
                                 .deliveryStreamStatus(currentDeliveryStreamStatus)

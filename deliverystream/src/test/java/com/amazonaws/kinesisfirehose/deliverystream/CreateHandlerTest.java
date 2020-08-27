@@ -8,6 +8,7 @@ import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.firehose.model.ServiceUnavailableException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.HandlerErrorCode;
 import software.amazon.cloudformation.proxy.Logger;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.CREATE_DELIVERY_STREAM_ERROR_MSG;
 import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.NUMBER_OF_STATUS_POLL_RETRIES;
 import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.TIMED_OUT_MESSAGE;
 import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.*;
@@ -559,7 +561,7 @@ public class CreateHandlerTest {
     }
 
     @Test
-    public void testCreateDeliveryStreamWithFailDescribeDS() {
+    public void testCreateDeliveryStreamWithSSEWhenDescribeDeliverStreamReturnsException() {
         final ResourceModel model = ResourceModel.builder()
             .deliveryStreamName(DELIVERY_STREAM_NAME)
             .deliveryStreamType(DELIVERY_STREAM_TYPE)
@@ -567,21 +569,15 @@ public class CreateHandlerTest {
             .deliveryStreamEncryptionConfigurationInput(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT)
             .build();
 
-        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
-            .deliveryStreamDescription(DeliveryStreamDescription.builder()
-                .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE)
-                .build())
-            .build();
-
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
-            .thenReturn(describeResponse);
+            .thenThrow(ServiceUnavailableException.class);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
             .build();
 
         final CallbackContext context = CallbackContext.builder()
-            .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES-1)
+            .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
             .deliveryStreamStatus(DeliveryStreamStatus.CREATING.toString())
             .build();
 
@@ -590,7 +586,8 @@ public class CreateHandlerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
-        assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getCallbackContext().getStabilizationRetriesRemaining()).isEqualTo(NUMBER_OF_STATUS_POLL_RETRIES-1);
         assertThat(response.getResourceModels()).isNull();
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
@@ -599,7 +596,7 @@ public class CreateHandlerTest {
     }
 
     @Test
-    public void testCreateDeliveryStreamWithSSEFailed() {
+    public void testCreateDeliveryStreamWithSSEEncryptionFailed() {
         final ResourceModel model = ResourceModel.builder()
             .deliveryStreamName(DELIVERY_STREAM_NAME)
             .deliveryStreamType(DELIVERY_STREAM_TYPE)
@@ -629,11 +626,11 @@ public class CreateHandlerTest {
             = handler.handleRequest(proxy, request, context, logger);
 
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
-        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getResourceModel()).isNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
         assertThat(response.getResourceModels()).isNull();
-        assertThat(response.getMessage()).isNull();
-        assertThat(response.getErrorCode()).isNull();
+        assertThat(response.getMessage()).isEqualTo(CREATE_DELIVERY_STREAM_ERROR_MSG);
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.InvalidRequest);
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }

@@ -6,6 +6,7 @@ import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionStatus;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
+import software.amazon.awssdk.services.firehose.model.InvalidArgumentException;
 import software.amazon.awssdk.services.firehose.model.StartDeliveryStreamEncryptionRequest;
 import software.amazon.awssdk.services.firehose.model.StopDeliveryStreamEncryptionRequest;
 import software.amazon.awssdk.services.firehose.model.UpdateDestinationRequest;
@@ -20,6 +21,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
     private final FirehoseClient firehoseClient = FirehoseClient.create();
     static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
     static final String TIMED_OUT_ENCRYPTION_MESSAGE = "Timed out waiting for the delivery stream encryption to become ENABLED.";
+    static final String ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT = "Unable to %s delivery stream encryption";
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
@@ -61,13 +63,21 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             if (currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.ENABLED.toString())
             || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLED.toString()))
                 return ProgressEvent.defaultSuccessHandler(model);
-            return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                    .deliveryStreamStatus(describeDeliveryStreamResp.deliveryStreamDescription().deliveryStreamStatusAsString())
-                    .deliveryStreamEncryptionStatus(currentDSEncryptionStatus)
-                    .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
-                    .build(),
-                (int) Duration.ofSeconds(30).getSeconds(),
-                model);
+            else if(currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString())
+            || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLING_FAILED.toString())) {
+                val errMsg = getErrorMessageFromEncryptionStatus(currentDSEncryptionStatus);
+                Exception exp = InvalidArgumentException.builder()
+                    .message(errMsg).build();
+                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp));
+            } else {
+                return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
+                        .deliveryStreamStatus(describeDeliveryStreamResp.deliveryStreamDescription().deliveryStreamStatusAsString())
+                        .deliveryStreamEncryptionStatus(currentDSEncryptionStatus)
+                        .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
+                        .build(),
+                    (int) Duration.ofSeconds(30).getSeconds(),
+                    model);
+            }
         }
 
         try {
@@ -98,6 +108,13 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
                 .build(),
             (int) Duration.ofSeconds(30).getSeconds(),
             model);
+    }
+
+    private String getErrorMessageFromEncryptionStatus(String deliveryStreamEncryptionStatus){
+        if (DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString().equals(deliveryStreamEncryptionStatus)){
+            return String.format(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "start");
+        }
+        return String.format(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "stop");
     }
 
     private EncryptionAction getEncryptionActionToPerform(ResourceModel model,
