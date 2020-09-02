@@ -917,7 +917,9 @@
     "update": {
       "permissions": [
         "firehose:UpdateDestination",
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "firehose:StartDeliveryStreamEncryption",
+        "firehose:StopDeliveryStreamEncryption"
       ]
     },
     "delete": {
