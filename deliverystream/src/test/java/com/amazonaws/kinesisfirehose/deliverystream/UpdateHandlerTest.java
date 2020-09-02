@@ -1,6 +1,5 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
-import org.junit.jupiter.api.Disabled;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfiguration;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionStatus;
@@ -10,7 +9,6 @@ import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResp
 import software.amazon.awssdk.services.firehose.model.DestinationDescription;
 import software.amazon.awssdk.services.firehose.model.LimitExceededException;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
-import software.amazon.awssdk.services.firehose.model.ServiceUnavailableException;
 import software.amazon.awssdk.services.firehose.model.StartDeliveryStreamEncryptionRequest;
 import software.amazon.awssdk.services.firehose.model.StartDeliveryStreamEncryptionResponse;
 import software.amazon.awssdk.services.firehose.model.StopDeliveryStreamEncryptionRequest;
@@ -33,10 +31,9 @@ import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHel
 import static com.amazonaws.kinesisfirehose.deliverystream.UpdateHandler.ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT;
 import static com.amazonaws.kinesisfirehose.deliverystream.UpdateHandler.TIMED_OUT_ENCRYPTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -142,10 +139,10 @@ public class UpdateHandlerTest {
             .build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponse).thenReturn(describeResponseSSEEnabling);
-        when(proxy.injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any())).thenReturn(updateResponse);
-        when(proxy.injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class),
-            any())).thenReturn(startResponse);
+        doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+            any());
+        doReturn(startResponse).when(proxy).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class),
+            any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -191,9 +188,8 @@ public class UpdateHandlerTest {
             .build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponseSSEEnabled);
-        when(proxy.injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any())).thenThrow(ResourceInUseException.class);
-
+        doThrow(ResourceInUseException.class).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+            any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -231,11 +227,10 @@ public class UpdateHandlerTest {
         UpdateDestinationResponse updateResp = UpdateDestinationResponse.builder().build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponseSSEEnabled);
-        when(proxy.injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any())).thenReturn(updateResp);
-        when(proxy.injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class),
-            any())).thenThrow(LimitExceededException.class);
-
+        doReturn(updateResp).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+            any());
+        doThrow(LimitExceededException.class).when(proxy).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class),
+            any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -440,11 +435,10 @@ public class UpdateHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponseSSEEnabled).thenReturn(describeResponseSSEDisabling);
-        when(proxy.injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any())).thenReturn(updateResponse);
-        when(proxy.injectCredentialsAndInvokeV2(any(StopDeliveryStreamEncryptionRequest.class),
-            any())).thenReturn(stopResponse);
-
+        doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+            any());
+        doReturn(stopResponse).when(proxy).injectCredentialsAndInvokeV2(any(StopDeliveryStreamEncryptionRequest.class),
+            any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -493,9 +487,8 @@ public class UpdateHandlerTest {
             .build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponseSSEEnabled);
-        when(proxy.injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any())).thenThrow(ResourceInUseException.class);
-
+        doThrow(ResourceInUseException.class).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+            any());
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -538,10 +531,10 @@ public class UpdateHandlerTest {
         UpdateDestinationResponse updateResp = UpdateDestinationResponse.builder().build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponseSSEEnabled);
-        when(proxy.injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any())).thenReturn(updateResp);
-        when(proxy.injectCredentialsAndInvokeV2(any(StopDeliveryStreamEncryptionRequest.class),
-            any())).thenThrow(LimitExceededException.class);
+        doReturn(updateResp).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+            any());
+        doThrow(LimitExceededException.class).when(proxy).injectCredentialsAndInvokeV2(any(StopDeliveryStreamEncryptionRequest.class),
+            any());
 
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
