@@ -28,6 +28,8 @@ Resources:
                 - "firehose:DescribeDeliveryStream"
                 - "firehose:ListDeliveryStreams"
                 - "firehose:UpdateDestination"
+                - "firehose:StartDeliveryStreamEncryption"
+                - "firehose:StopDeliveryStreamEncryption"
                 - "iam:GetRole"
                 - "iam:PassRole"
                 Resource: "*"
