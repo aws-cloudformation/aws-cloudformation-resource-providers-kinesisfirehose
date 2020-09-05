@@ -125,7 +125,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         if (deliveryStreamEncryptionConfig != null) {
             encryptionAction = EncryptionAction.START;
         }
-        else if (existingDeliveryStreamEncryptionConfig != null){
+        else if (existingDeliveryStreamEncryptionConfig != null && !existingDeliveryStreamEncryptionConfig.statusAsString().equals(DeliveryStreamEncryptionStatus.DISABLED.toString())){
             encryptionAction = EncryptionAction.STOP;
         }
         return encryptionAction;
