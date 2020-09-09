@@ -906,7 +906,9 @@
         "firehose:CreateDeliveryStream",
         "firehose:DescribeDeliveryStream",
         "iam:GetRole",
-        "iam:PassRole"
+        "iam:PassRole",
+        "kms:CreateGrant",
+        "kms:DescribeKey"
       ]
     },
     "read": {
@@ -919,13 +921,18 @@
         "firehose:UpdateDestination",
         "firehose:DescribeDeliveryStream",
         "firehose:StartDeliveryStreamEncryption",
-        "firehose:StopDeliveryStreamEncryption"
+        "firehose:StopDeliveryStreamEncryption",
+        "kms:CreateGrant",
+        "kms:RevokeGrant",
+        "kms:DescribeKey"
       ]
     },
     "delete": {
       "permissions": [
         "firehose:DeleteDeliveryStream",
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "kms:RevokeGrant",
+        "kms:DescribeKey"
       ]
     },
     "list": {

@@ -27,23 +27,15 @@ Resources:
                 - "firehose:DeleteDeliveryStream"
                 - "firehose:DescribeDeliveryStream"
                 - "firehose:ListDeliveryStreams"
-                - "firehose:UpdateDestination"
                 - "firehose:StartDeliveryStreamEncryption"
                 - "firehose:StopDeliveryStreamEncryption"
+                - "firehose:UpdateDestination"
                 - "iam:GetRole"
                 - "iam:PassRole"
+                - "kms:CreateGrant"
+                - "kms:DescribeKey"
+                - "kms:RevokeGrant"
                 Resource: "*"
-        - PolicyName: ResourceTypePolicyKMSGrants
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "kms:CreateGrant"
-                  - "kms:RevokeGrant"
-                  - "kms:DescribeKey"
-                Resource: "*"
-
 Outputs:
   ExecutionRoleArn:
     Value:
