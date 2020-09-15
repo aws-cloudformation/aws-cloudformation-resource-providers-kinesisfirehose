@@ -36,23 +36,14 @@ class HandlerUtils {
 	}
 
 	public static software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput translateDeliveryStreamEncryptionConfigurationInput(final DeliveryStreamEncryptionConfigurationInput deliveryStreamEncryptionConfigurationInput) {
-		if(deliveryStreamEncryptionConfigurationInput == null) return null;
+		if(deliveryStreamEncryptionConfigurationInput == null){
+			return null;
+		}
 		return software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput.builder()
 				.keyType(deliveryStreamEncryptionConfigurationInput.getKeyType())
 				.keyARN(deliveryStreamEncryptionConfigurationInput.getKeyARN())
 				.build();
 	}
-
-	/*
-	public static Collection<software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput> translateDeliveryStreamEncryptionConfigurationInputCollection(final Collection<DeliveryStreamEncryptionConfigurationInput> deliveryStreamEncryptionConfigurationInputCollection) {
-		if(deliveryStreamEncryptionConfigurationInputCollection == null) return null;
-		return Collections2.transform(deliveryStreamEncryptionConfigurationInputCollection, new Function<DeliveryStreamEncryptionConfigurationInput, software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput>() {
-			@Override
-			public software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput apply(final DeliveryStreamEncryptionConfigurationInput input) {
-				return translateDeliveryStreamEncryptionConfigurationInput(input);
-			}
-		});
-	}*/
 
     static software.amazon.awssdk.services.firehose.model.VpcConfiguration translateVpcConfiguration(final VpcConfiguration vpcConfiguration) {
         if (vpcConfiguration == null) {

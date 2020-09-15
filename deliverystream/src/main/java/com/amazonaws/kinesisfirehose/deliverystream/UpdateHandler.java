@@ -19,7 +19,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
 
     private AmazonWebServicesClientProxy clientProxy;
     private final FirehoseClient firehoseClient = FirehoseClient.create();
-    static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
+    static final int NUMBER_OF_STATUS_POLL_RETRIES = 20;
     static final String TIMED_OUT_ENCRYPTION_MESSAGE = "Timed out waiting for the delivery stream encryption to become ENABLED.";
     static final String ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT = "Unable to %s delivery stream encryption";
 
@@ -41,7 +41,6 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         return updateDeliveryStreamAndUpdateProgress(model, currentContext, logger);
     }
 
-
     private ProgressEvent<ResourceModel, CallbackContext> updateDeliveryStreamAndUpdateProgress(ResourceModel model,
         CallbackContext callbackContext,
         final Logger logger) {
@@ -54,17 +53,25 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             describeDeliveryStreamResp = getDescribeDeliveryStreamResponse(model);
         }catch (final Exception e) {
             logger.log(String.format("DescribeDeliveryStream failed with exception %s", e.getMessage()));
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            // In case describe fails(either on the first call or on the callbacks) we would set the
+            // previous values of callbackContext, return and mark handler status as in-progress for cfn to retry.
+            return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
+                    .deliveryStreamStatus(callbackContext.getDeliveryStreamStatus())
+                    .deliveryStreamEncryptionStatus(callbackContext.getDeliveryStreamEncryptionStatus())
+                    .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
+                    .build(),
+                (int) Duration.ofSeconds(30).getSeconds(),
+                model);
         }
 
         // In case of callbacks.
         if(deliveryStreamEncryptionStatus != null) {
             val currentDSEncryptionStatus = describeDeliveryStreamResp.deliveryStreamDescription().deliveryStreamEncryptionConfiguration().statusAsString();
             if (currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.ENABLED.toString())
-            || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLED.toString()))
+                || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLED.toString()))
                 return ProgressEvent.defaultSuccessHandler(model);
             else if(currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString())
-            || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLING_FAILED.toString())) {
+                || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLING_FAILED.toString())) {
                 val errMsg = getErrorMessageFromEncryptionStatus(currentDSEncryptionStatus);
                 Exception exp = InvalidArgumentException.builder()
                     .message(errMsg).build();
