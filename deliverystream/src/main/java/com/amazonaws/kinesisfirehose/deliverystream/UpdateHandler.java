@@ -20,7 +20,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
     private AmazonWebServicesClientProxy clientProxy;
     private final FirehoseClient firehoseClient = FirehoseClient.create();
     static final int NUMBER_OF_STATUS_POLL_RETRIES = 20;
-    static final String TIMED_OUT_ENCRYPTION_MESSAGE = "Timed out waiting for the delivery stream encryption to become ENABLED.";
+    static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream Update handler to stabilize";
     static final String ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT = "Unable to %s delivery stream encryption";
 
     @Override
@@ -46,7 +46,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         final Logger logger) {
         val deliveryStreamEncryptionStatus = callbackContext.getDeliveryStreamEncryptionStatus();
         if (callbackContext.getStabilizationRetriesRemaining() == 0) {
-            throw new RuntimeException(TIMED_OUT_ENCRYPTION_MESSAGE);
+            throw new RuntimeException(TIMED_OUT_MESSAGE);
         }
         DescribeDeliveryStreamResponse describeDeliveryStreamResp;
         try {

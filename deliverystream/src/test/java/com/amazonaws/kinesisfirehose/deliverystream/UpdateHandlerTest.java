@@ -29,7 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.*;
 import static com.amazonaws.kinesisfirehose.deliverystream.UpdateHandler.ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT;
-import static com.amazonaws.kinesisfirehose.deliverystream.UpdateHandler.TIMED_OUT_ENCRYPTION_MESSAGE;
+import static com.amazonaws.kinesisfirehose.deliverystream.UpdateHandler.TIMED_OUT_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -381,7 +381,8 @@ public class UpdateHandlerTest {
             response = handler.handleRequest(proxy, request, callbackContext, logger);
         }
         catch(Exception e){
-            assertThat(e).isInstanceOf(RuntimeException.class).hasMessageContaining(TIMED_OUT_ENCRYPTION_MESSAGE);
+            assertThat(e).isInstanceOf(RuntimeException.class).hasMessageContaining(
+                TIMED_OUT_MESSAGE);
         }
         assertThat(response).isNull();
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
