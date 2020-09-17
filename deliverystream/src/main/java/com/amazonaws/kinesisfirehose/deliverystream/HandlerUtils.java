@@ -4,6 +4,8 @@ import com.amazonaws.util.StringUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.val;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.*;
@@ -1048,20 +1050,56 @@ class HandlerUtils {
 	}
 
 	static boolean doesDeliveryStreamExistWithName(ResourceModel model,
-												   AmazonWebServicesClientProxy clientProxy,
-												   final FirehoseClient firehoseClient) {
+												   FirehoseAPIWrapper firehoseAPIWrapper) {
 		if(StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
 			return false;
 		}
-
 		try {
-			clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
-							.deliveryStreamName(model.getDeliveryStreamName())
-							.build(),
-					firehoseClient::describeDeliveryStream);
+			firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName());
 			return true;
 		} catch (ResourceNotFoundException e) {
 			return false;
 		}
 	}
+
+	public static final List<Tag> translateTagsToCfnTagType(Collection<software.amazon.awssdk.services.firehose.model.Tag> tags) {
+		if (tags == null) {
+			return null;
+		}
+		return tags.stream().map(
+			tag -> Tag.builder().key(tag.key())
+				.value(tag.value()).build()).collect(Collectors.toList());
+	}
+
+	static List<software.amazon.awssdk.services.firehose.model.Tag> generateNFirehoseTags(
+		int noOfKeys) {
+		return generateNFirehoseTags(noOfKeys, 0);
+	}
+
+	static List<software.amazon.awssdk.services.firehose.model.Tag> generateNFirehoseTags(
+		int noOfKeys, int startingKeyNum) {
+		List<software.amazon.awssdk.services.firehose.model.Tag> tags = new ArrayList<>();
+		int keyNum = startingKeyNum;
+		while(keyNum < noOfKeys + startingKeyNum){
+			tags.add(software.amazon.awssdk.services.firehose.model.Tag.builder().key("Key" + keyNum).value("Val" + keyNum).build());
+			keyNum++;
+		}
+		return tags;
+	}
+
+	static boolean validateTags(List<com.amazonaws.kinesisfirehose.deliverystream.Tag> modelTags, List<com.amazonaws.kinesisfirehose.deliverystream.Tag> firehoseRespToCfnTags) {
+		val missingTagsInModel = firehoseRespToCfnTags.stream().filter(tag -> !modelTags.contains(tag)).collect(Collectors.toList());
+		return modelTags.size() == firehoseRespToCfnTags.size() && missingTagsInModel.isEmpty();
+	}
+
+	public static List<software.amazon.awssdk.services.firehose.model.Tag> translateTagsToFirehoseTagType(
+		final List<Tag> tags) {
+		if (tags == null) {
+			return null;
+		}
+		return tags.stream().map(
+			tag -> software.amazon.awssdk.services.firehose.model.Tag.builder().key(tag.getKey())
+				.value(tag.getValue()).build()).collect(Collectors.toList());
+	}
+
 }

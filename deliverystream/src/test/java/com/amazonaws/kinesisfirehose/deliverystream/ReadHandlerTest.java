@@ -10,6 +10,8 @@ import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
 import software.amazon.awssdk.services.firehose.model.DestinationDescription;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
+import software.amazon.awssdk.services.firehose.model.ListTagsForDeliveryStreamRequest;
+import software.amazon.awssdk.services.firehose.model.ListTagsForDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.SourceDescription;
 import software.amazon.awssdk.services.firehose.model.ResourceNotFoundException;
 import software.amazon.awssdk.services.firehose.model.ProcessorType;
@@ -24,10 +26,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -70,12 +71,20 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
         val resourceModel = response.getResourceModel();
         val source = resourceModel.getKinesisStreamSourceConfiguration();
         assertThat(source.getKinesisStreamARN()).isEqualTo(KINESIS_STREAM_ARN);
         assertThat(source.getRoleARN()).isEqualTo(ROLE_ARN);
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -97,7 +106,14 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
 
         val resourceModel = response.getResourceModel();
@@ -110,6 +126,7 @@ public class ReadHandlerTest {
         assertThat(destination.getCompressionFormat()).isEqualTo(COMPRESSION_FORMAT);
         assertThat(destination.getErrorOutputPrefix()).isEqualTo(ERROR_OUTPUT_PREFIX);
         assertThat(destination.getRoleARN()).isEqualTo(ROLE_ARN);
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -135,7 +152,14 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
 
         val resourceModel = response.getResourceModel();
@@ -150,6 +174,7 @@ public class ReadHandlerTest {
         assertThat(destination.getRoleARN()).isEqualTo(ROLE_ARN);
         validateProcessingConfiguration(destination.getProcessingConfiguration());
         validateCloudWatchConfig(destination.getCloudWatchLoggingOptions());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -172,7 +197,14 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
 
         val resourceModel = response.getResourceModel();
@@ -190,6 +222,7 @@ public class ReadHandlerTest {
         assertThat(destination.getRetryOptions().getDurationInSeconds()).isEqualTo(1);
         validateS3Configuration(destination.getS3Configuration());
         validateS3Configuration(destination.getS3BackupConfiguration());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -215,7 +248,14 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
 
         val resourceModel = response.getResourceModel();
@@ -226,6 +266,7 @@ public class ReadHandlerTest {
         validateCloudWatchConfig(destination.getCloudWatchLoggingOptions());
         validateProcessingConfiguration(destination.getProcessingConfiguration());
         validateS3Configuration(destination.getS3BackupConfiguration());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -248,8 +289,17 @@ public class ReadHandlerTest {
                 .build();
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
-                .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+            .thenReturn(describeResponse);
+
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
 
         val resourceModel = response.getResourceModel();
@@ -281,10 +331,11 @@ public class ReadHandlerTest {
         assertThat(schema.getRoleARN()).isEqualTo(ROLE_ARN);
         assertThat(schema.getTableName()).isEqualTo("tableName");
         assertThat(schema.getVersionId()).isEqualTo("versionId");
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
-    public void testReadS3DeliveryStream() {
+    public void testReadS3DeliveryStreamWithTagging() {
         ResourceModel model = ResourceModel.builder().deliveryStreamName(DELIVERY_STREAM_NAME).build();
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -302,7 +353,22 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+
+        val respTags  = HandlerUtils.generateNFirehoseTags(4);
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .tags(respTags.subList(0,2))
+            .hasMoreTags(true)
+            .build();
+        final ListTagsForDeliveryStreamResponse listTagsResp2 = ListTagsForDeliveryStreamResponse
+            .builder()
+            .tags(respTags.subList(2,4))
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).doReturn(listTagsResp2).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
 
         val resourceModel = response.getResourceModel();
@@ -318,6 +384,7 @@ public class ReadHandlerTest {
         assertThat(destination.getPrefix()).isEqualTo(PREFIX);
         assertThat(destination.getRoleARN()).isEqualTo(ROLE_ARN);
         validateCloudWatchConfig(destination.getCloudWatchLoggingOptions());
+        assertThat(HandlerUtils.validateTags(resourceModel.getTags(), HandlerUtils.translateTagsToCfnTagType(respTags))).as("Resource model doesn't contain all the tags form firehose response for the delivery stream").isTrue();
     }
 
     @Test
@@ -342,14 +409,21 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
         val resourceModel = response.getResourceModel();
         val esConfig = resourceModel.getElasticsearchDestinationConfiguration();
         validateBasicElasticSearchConfiguration(esConfig);
         assertThat(esConfig.getProcessingConfiguration() == null).isEqualTo(true);
         validateS3Configuration(esConfig.getS3Configuration());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -374,8 +448,14 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
         val resourceModel = response.getResourceModel();
         val esConfig = resourceModel.getElasticsearchDestinationConfiguration();
@@ -385,6 +465,7 @@ public class ReadHandlerTest {
         assertThat(vpcConfiguration.getSecurityGroupIds().get(0)).isEqualTo("securityGroupIds");
         assertThat(vpcConfiguration.getSubnetIds().get(0)).isEqualTo("subnetIds");
         validateS3Configuration(esConfig.getS3Configuration());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -412,13 +493,20 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
         val resourceModel = response.getResourceModel();
         val esConfig = resourceModel.getElasticsearchDestinationConfiguration();
         validateProcessingConfiguration(esConfig.getProcessingConfiguration());
         validateCloudWatchConfig(esConfig.getCloudWatchLoggingOptions());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -443,7 +531,14 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
         val resourceModel = response.getResourceModel();
         val splunkConfig = resourceModel.getSplunkDestinationConfiguration();
@@ -458,6 +553,7 @@ public class ReadHandlerTest {
         validateCloudWatchConfig(splunkConfig.getCloudWatchLoggingOptions());
         validateProcessingConfiguration(splunkConfig.getProcessingConfiguration());
         validateS3Configuration(splunkConfig.getS3Configuration());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -482,8 +578,14 @@ public class ReadHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
-
-        val response = new ReadHandler().handleRequest(
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
+            .builder()
+            .hasMoreTags(false)
+            .build();
+        doReturn(listTagsResp).when(proxy).injectCredentialsAndInvokeV2(any(
+            ListTagsForDeliveryStreamRequest.class),
+            any());
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
         val resourceModel = response.getResourceModel();
         val httpConfig = resourceModel.getHttpEndpointDestinationConfiguration();
@@ -497,6 +599,7 @@ public class ReadHandlerTest {
         validateCloudWatchConfig(httpConfig.getCloudWatchLoggingOptions());
         validateProcessingConfiguration(httpConfig.getProcessingConfiguration());
         validateS3Configuration(httpConfig.getS3Configuration());
+        assertThat(resourceModel.getTags()).isNull();
     }
 
     @Test
@@ -520,10 +623,9 @@ public class ReadHandlerTest {
                 .build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenThrow(ResourceNotFoundException.builder().message("ResourceNotFound").build());
-        val response = new ReadHandler().handleRequest(
+        val response = readHandler.handleRequest(
                 proxy, request, null, logger);
         assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
-
     }
 
     private void validateS3Configuration(com.amazonaws.kinesisfirehose.deliverystream.S3DestinationConfiguration s3DestinationConfiguration) {
