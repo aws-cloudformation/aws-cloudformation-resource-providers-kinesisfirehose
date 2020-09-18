@@ -912,7 +912,7 @@
       "properties": {
         "Key": {
           "type": "string",
-          "pattern": " ^(?!aws:)[\\p{L}\\p{Z}\\p{N}_.:\\/=+\\-@%]*$",
+          "pattern": "^(?!aws:)[\\p{L}\\p{Z}\\p{N}_.:\\/=+\\-@%]*$",
           "minLength": 1,
           "maxLength": 128
         },
@@ -933,6 +933,9 @@
       "permissions": [
         "firehose:CreateDeliveryStream",
         "firehose:DescribeDeliveryStream",
+        "firehose:DescribeDeliveryStream",
+        "firehose:DescribeDeliveryStream",
+        "firehose:TagDeliveryStream",
         "iam:GetRole",
         "iam:PassRole",
         "kms:CreateGrant",
@@ -941,7 +944,8 @@
     },
     "read": {
       "permissions": [
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "firehose:ListTagsForDeliveryStream"
       ]
     },
     "update": {
@@ -950,6 +954,9 @@
         "firehose:DescribeDeliveryStream",
         "firehose:StartDeliveryStreamEncryption",
         "firehose:StopDeliveryStreamEncryption",
+        "firehose:ListTagsForDeliveryStream",
+        "firehose:TagDeliveryStream",
+        "firehose:UntagDeliveryStream",
         "kms:CreateGrant",
         "kms:RevokeGrant",
         "kms:DescribeKey"
