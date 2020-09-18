@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.CREATE_DELIVERY_STREAM_ERROR_MSG;
+import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT;
 import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.NUMBER_OF_STATUS_POLL_RETRIES;
 import static com.amazonaws.kinesisfirehose.deliverystream.CreateHandler.TIMED_OUT_MESSAGE;
 import static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamTestHelper.*;
@@ -629,7 +629,7 @@ public class CreateHandlerTest {
         assertThat(response.getResourceModel()).isNull();
         assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
         assertThat(response.getResourceModels()).isNull();
-        assertThat(response.getMessage()).isEqualTo(CREATE_DELIVERY_STREAM_ERROR_MSG);
+        assertThat(response.getMessage()).isEqualTo(String.format(CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT,DeliveryStreamStatus.CREATING_FAILED));
         assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.InvalidRequest);
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
