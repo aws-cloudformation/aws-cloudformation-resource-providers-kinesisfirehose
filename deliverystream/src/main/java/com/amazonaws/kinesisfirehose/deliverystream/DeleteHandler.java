@@ -34,7 +34,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
                 .build()
                 : callbackContext;
 
-        if(callbackContext == null && !HandlerUtils.doesDeliveryStreamExistWithName(model,
+        if (callbackContext == null && !HandlerUtils.doesDeliveryStreamExistWithName(model,
             firehoseAPIWrapper)) {
             final Exception e = ResourceNotFoundException.builder()
                     .message("Firehose doesn't exist with the name: " + model.getDeliveryStreamName())
@@ -46,8 +46,8 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
         return deleteDeliveryStreamAndUpdateProgress(model, currentContext, logger);
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> deleteDeliveryStreamAndUpdateProgress(ResourceModel model,
-                                                                                                CallbackContext callbackContext,
+    private ProgressEvent<ResourceModel, CallbackContext> deleteDeliveryStreamAndUpdateProgress(final ResourceModel model,
+                                                                                                final CallbackContext callbackContext,
                                                                                                 final Logger logger) {
         val deliveryStreamStatus = callbackContext.getDeliveryStreamStatus();
         logger.log("deliveryStreamStatus = " + deliveryStreamStatus);
@@ -82,7 +82,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
         }
     }
 
-    private String getDeliveryStreamStatus(FirehoseAPIWrapper firehoseAPIWrapper, ResourceModel model) {
+    private String getDeliveryStreamStatus(final FirehoseAPIWrapper firehoseAPIWrapper, final ResourceModel model) {
         try {
             return firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName()).deliveryStreamDescription().deliveryStreamStatusAsString();
         } catch (ResourceNotFoundException e) {

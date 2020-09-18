@@ -68,7 +68,7 @@ public class FirehoseAPIWrapper {
     }
 
     public UntagDeliveryStreamResponse untagDeliveryStream(final String deliveryStreamName,
-        Collection<String> tagKeys) {
+        final Collection<String> tagKeys) {
         val req = UntagDeliveryStreamRequest.builder()
             .deliveryStreamName(deliveryStreamName)
             .tagKeys(tagKeys)

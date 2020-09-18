@@ -11,11 +11,9 @@ import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
-import software.amazon.cloudformation.resource.IdentifierUtils;
-
 import java.time.Duration;
-
 import lombok.val;
+import software.amazon.cloudformation.resource.IdentifierUtils;
 
 public class CreateHandler extends BaseHandler<CallbackContext> {
     private static final String STACK_NAME_TAG_KEY = "aws:cloudformation:stack-name";
