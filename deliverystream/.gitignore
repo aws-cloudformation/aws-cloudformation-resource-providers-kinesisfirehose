@@ -18,6 +18,5 @@ target/
 .hypothesis
 
 # our logs
-rpdk.log
+rpdk.log*
 docs/
-rpdk.log.1

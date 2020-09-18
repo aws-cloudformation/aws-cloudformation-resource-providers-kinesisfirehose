@@ -27,9 +27,14 @@ Resources:
                 - "firehose:DeleteDeliveryStream"
                 - "firehose:DescribeDeliveryStream"
                 - "firehose:ListDeliveryStreams"
+                - "firehose:StartDeliveryStreamEncryption"
+                - "firehose:StopDeliveryStreamEncryption"
                 - "firehose:UpdateDestination"
                 - "iam:GetRole"
                 - "iam:PassRole"
+                - "kms:CreateGrant"
+                - "kms:DescribeKey"
+                - "kms:RevokeGrant"
                 Resource: "*"
 Outputs:
   ExecutionRoleArn:

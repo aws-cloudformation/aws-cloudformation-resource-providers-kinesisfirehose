@@ -6,6 +6,7 @@ import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
+import software.amazon.awssdk.services.firehose.model.InvalidArgumentException;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
@@ -23,6 +24,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
     private static final int MAX_LENGTH_DELIVERY_STREAM_NAME = 64;
     static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream to become ACTIVE.";
+    static final String CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT = "Unable to Create Delivery Stream. Delivery stream status is %s";
 
     private AmazonWebServicesClientProxy clientProxy;
     private final FirehoseClient firehoseClient = FirehoseClient.create();
@@ -79,9 +81,24 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
             }
         } else {
-            val currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+            // If for some reason during the stabilization phase, a call like getDeliveryStreamStatus fails, catch the exception, and
+            // retry stabilizing if more attempts are remaining.
+            String currentDeliveryStreamStatus = "";
+            try {
+                 currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+            }
+            catch (final Exception e){
+                logger.log(String.format("Error getting Delivery Stream Status. Exception %s", e.getMessage()));
+            }
+
             if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.ACTIVE.toString())) {
                 return ProgressEvent.defaultSuccessHandler(model);
+            } else if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.CREATING_FAILED.toString())) {
+                // Creating an InvalidArgumentException instead of InvalidKMSException since that would be too specific of a cause
+                // for CREATING_FAILED status.
+                Exception exp = InvalidArgumentException.builder()
+                    .message(String.format(CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT,currentDeliveryStreamStatus)).build();
+                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp));
             } else {
                 return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
                                 .deliveryStreamStatus(currentDeliveryStreamStatus)
@@ -104,6 +121,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .kinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfiguration(model.getKinesisStreamSourceConfiguration()))
                 .splunkDestinationConfiguration(HandlerUtils.translateSplunkDestinationConfiguration(model.getSplunkDestinationConfiguration()))
                 .httpEndpointDestinationConfiguration(HandlerUtils.translateHttpEndpointDestinationConfiguration(model.getHttpEndpointDestinationConfiguration()))
+                .deliveryStreamEncryptionConfigurationInput(HandlerUtils.translateDeliveryStreamEncryptionConfigurationInput(model.getDeliveryStreamEncryptionConfigurationInput()))
                 .build();
 
         //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that act on a DeliveryStream

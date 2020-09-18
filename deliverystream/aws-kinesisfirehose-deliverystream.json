@@ -6,6 +6,9 @@
     "Arn": {
       "type": "string"
     },
+    "DeliveryStreamEncryptionConfigurationInput": {
+      "$ref": "#/definitions/DeliveryStreamEncryptionConfigurationInput"
+    },
     "DeliveryStreamName": {
       "type": "string",
       "minLength": 1,
@@ -42,6 +45,28 @@
     }
   },
   "definitions": {
+    "DeliveryStreamEncryptionConfigurationInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "KeyARN": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "arn:.*"
+        },
+        "KeyType": {
+          "type": "string",
+          "enum": [
+            "AWS_OWNED_CMK",
+            "CUSTOMER_MANAGED_CMK"
+          ]
+        }
+      },
+      "required": [
+        "KeyType"
+      ]
+    },
     "SplunkDestinationConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -881,7 +906,9 @@
         "firehose:CreateDeliveryStream",
         "firehose:DescribeDeliveryStream",
         "iam:GetRole",
-        "iam:PassRole"
+        "iam:PassRole",
+        "kms:CreateGrant",
+        "kms:DescribeKey"
       ]
     },
     "read": {
@@ -892,13 +919,20 @@
     "update": {
       "permissions": [
         "firehose:UpdateDestination",
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "firehose:StartDeliveryStreamEncryption",
+        "firehose:StopDeliveryStreamEncryption",
+        "kms:CreateGrant",
+        "kms:RevokeGrant",
+        "kms:DescribeKey"
       ]
     },
     "delete": {
       "permissions": [
         "firehose:DeleteDeliveryStream",
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "kms:RevokeGrant",
+        "kms:DescribeKey"
       ]
     },
     "list": {
