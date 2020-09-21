@@ -5,6 +5,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.val;
 import software.amazon.awssdk.services.firehose.model.*;
 import software.amazon.awssdk.services.firehose.model.HttpEndpointCommonAttribute;
@@ -1189,7 +1190,7 @@ class HandlerUtils {
 		}
 	}
 
-	public static final List<Tag> translateTagsToCfnTagType(final Collection<software.amazon.awssdk.services.firehose.model.Tag> tags) {
+	public static final List<Tag> translateFirehoseSDKTagsToCfnModelTags(final List<software.amazon.awssdk.services.firehose.model.Tag> tags) {
 		if (tags == null) {
 			return null;
 		}
@@ -1199,27 +1200,24 @@ class HandlerUtils {
 	}
 
 	static List<software.amazon.awssdk.services.firehose.model.Tag> generateNFirehoseTags(
-		int noOfKeys) {
-		return generateNFirehoseTags(noOfKeys, 0);
-	}
-
-	static List<software.amazon.awssdk.services.firehose.model.Tag> generateNFirehoseTags(
 		final int noOfKeys, final int startingKeyNum) {
 		List<software.amazon.awssdk.services.firehose.model.Tag> tags = new ArrayList<>();
 		int keyNum = startingKeyNum;
 		while (keyNum < noOfKeys + startingKeyNum) {
-			tags.add(software.amazon.awssdk.services.firehose.model.Tag.builder().key("Key" + keyNum).value("Val" + keyNum).build());
+			tags.add(software.amazon.awssdk.services.firehose.model.Tag.builder().key("Key" + keyNum).value("Value" + keyNum).build());
 			keyNum++;
 		}
 		return tags;
 	}
 
-	static boolean validateTags(final List<com.amazonaws.kinesisfirehose.deliverystream.Tag> modelTags, final List<com.amazonaws.kinesisfirehose.deliverystream.Tag> firehoseRespToCfnTags) {
-		val missingTagsInModel = firehoseRespToCfnTags.stream().filter(tag -> !modelTags.contains(tag)).collect(Collectors.toList());
-		return modelTags.size() == firehoseRespToCfnTags.size() && missingTagsInModel.isEmpty();
+	static boolean validateCfnModelTags(final List<com.amazonaws.kinesisfirehose.deliverystream.Tag> actual, final List<com.amazonaws.kinesisfirehose.deliverystream.Tag> expected) {
+		if(actual == null && expected == null) return true;
+		if(actual == null || expected == null) return false;
+		val missingTagsInModel = expected.stream().filter(tag -> !actual.contains(tag)).collect(Collectors.toList());
+		return actual.size() == expected.size() && missingTagsInModel.isEmpty();
 	}
 
-	public static List<software.amazon.awssdk.services.firehose.model.Tag> translateTagsToFirehoseTagType(
+	public static List<software.amazon.awssdk.services.firehose.model.Tag> translateCFNModelTagsToFirehoseSDKTags(
 		final List<Tag> tags) {
 		if (tags == null) {
 			return null;
@@ -1229,4 +1227,20 @@ class HandlerUtils {
 				.value(tag.getValue()).build()).collect(Collectors.toList());
 	}
 
+
+	public static List<String> tagKeysInFirstListButNotInSecond(
+		List<software.amazon.awssdk.services.firehose.model.Tag> first,
+		List<software.amazon.awssdk.services.firehose.model.Tag> second) {
+		if (second == null) {
+			return first.stream().map(software.amazon.awssdk.services.firehose.model.Tag::key)
+				.collect(Collectors.toList());
+		} else {
+			Function<software.amazon.awssdk.services.firehose.model.Tag, String> toKey = elem -> elem.key();
+			Set<String> keysInSecond = second.stream().map(tag -> tag.key()).collect(Collectors.toSet());
+			return first.stream()
+				.map(tag -> tag.key())
+				.filter(keyInFirst -> !keysInSecond.contains(keyInFirst))
+				.collect(Collectors.toList());
+		}
+	}
 }

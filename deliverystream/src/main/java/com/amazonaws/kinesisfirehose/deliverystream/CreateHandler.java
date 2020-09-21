@@ -117,7 +117,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .splunkDestinationConfiguration(HandlerUtils.translateSplunkDestinationConfiguration(model.getSplunkDestinationConfiguration()))
                 .httpEndpointDestinationConfiguration(HandlerUtils.translateHttpEndpointDestinationConfiguration(model.getHttpEndpointDestinationConfiguration()))
                 .deliveryStreamEncryptionConfigurationInput(HandlerUtils.translateDeliveryStreamEncryptionConfigurationInput(model.getDeliveryStreamEncryptionConfigurationInput()))
-                .tags(HandlerUtils.translateTagsToFirehoseTagType(model.getTags()))
+                .tags(HandlerUtils.translateCFNModelTagsToFirehoseSDKTags(model.getTags()))
                 .build();
 
         //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that act on a DeliveryStream

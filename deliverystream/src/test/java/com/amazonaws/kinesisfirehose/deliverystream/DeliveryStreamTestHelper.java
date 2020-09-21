@@ -2,6 +2,7 @@ package com.amazonaws.kinesisfirehose.deliverystream;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import software.amazon.awssdk.services.firehose.model.*;
 import software.amazon.awssdk.services.firehose.model.HiveJsonSerDe;
 import software.amazon.awssdk.services.firehose.model.OrcSerDe;
@@ -333,4 +334,8 @@ public class DeliveryStreamTestHelper  {
         .keyARN(DELIVERY_STREAM_KEY_ARN)
         .keyType(DELIVERY_STREAM_KEY_TYPE)
         .build();
+
+    public final static List<Tag> CFN_MODEL_TAGS =  HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(HandlerUtils.generateNFirehoseTags(5, 3));
+
+    public final static List<software.amazon.awssdk.services.firehose.model.Tag> EXISTING_FIREHOSE_RESPONSE_TAGS = HandlerUtils.generateNFirehoseTags(5, 6);
 }

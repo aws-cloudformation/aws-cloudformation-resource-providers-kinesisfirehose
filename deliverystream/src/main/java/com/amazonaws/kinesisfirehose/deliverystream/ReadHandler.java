@@ -26,7 +26,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
         final ResourceModel model = request.getDesiredResourceState();
         logger.log(String.format("Read Handler called with id %s.", model.getDeliveryStreamName()));
         try {
-            hydrateDeliveryStreamResource(model);
+            hydrateDeliveryStreamResource(model, logger);
             return ProgressEvent.defaultSuccessHandler(model);
         } catch (Exception e) {
             logger.log(String.format("Got exception for %s, error message %s",
@@ -36,7 +36,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
         }
     }
 
-    private void hydrateDeliveryStreamResource(ResourceModel model) {
+    private void hydrateDeliveryStreamResource(ResourceModel model, final  Logger logger) {
         val deliveryStreamDescription = firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName()).deliveryStreamDescription();
         model.setArn(deliveryStreamDescription.deliveryStreamARN());
         model.setKinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfigurationToCfnModel(deliveryStreamDescription.source()));
@@ -45,25 +45,25 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
         setDestinationDescription(model, deliveryStreamDescription.destinations());
         val tagsPageSize = 50;
         val tags = firehoseAPIWrapper
-            .listAllTagsOnDeliveryStream(model.getDeliveryStreamName(), tagsPageSize);
-        model.setTags(HandlerUtils.translateTagsToCfnTagType(tags.isEmpty() ? null : tags));
+                .listAllTagsOnDeliveryStream(model.getDeliveryStreamName(), tagsPageSize);
+        logger.log(String.format("Hydrating deliveryStream model with %d retrieved tags on the delivery stream name %s", tags.size(), model.getDeliveryStreamName()));
+        model.setTags(HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(tags.isEmpty() ? null : tags));
     }
 
-    private ResourceModel setDestinationDescription(ResourceModel model, List<DestinationDescription> descriptions) {
+    private void setDestinationDescription(final ResourceModel model, final List<DestinationDescription> descriptions) {
         descriptions.stream().forEach(destination -> {
             model.setS3DestinationConfiguration(
-                    HandlerUtils.translateS3DestinationConfigurationToCfnModel(destination.s3DestinationDescription()));
+                HandlerUtils.translateS3DestinationConfigurationToCfnModel(destination.s3DestinationDescription()));
             model.setExtendedS3DestinationConfiguration(
-                    HandlerUtils.translateExtendedS3DestinationConfigurationToCfnModel(destination.extendedS3DestinationDescription()));
+                HandlerUtils.translateExtendedS3DestinationConfigurationToCfnModel(destination.extendedS3DestinationDescription()));
             model.setRedshiftDestinationConfiguration(
-                    HandlerUtils.translateRedshiftDestinationToCfnModel(destination.redshiftDestinationDescription()));
+                HandlerUtils.translateRedshiftDestinationToCfnModel(destination.redshiftDestinationDescription()));
             model.setElasticsearchDestinationConfiguration(
-                    HandlerUtils.translateElasticsearchDestinationConfigurationToCfnModel(destination.elasticsearchDestinationDescription()));
+                HandlerUtils.translateElasticsearchDestinationConfigurationToCfnModel(destination.elasticsearchDestinationDescription()));
             model.setSplunkDestinationConfiguration(
-                    HandlerUtils.translateSplunkDestinationConfigurationToCfnModel(destination.splunkDestinationDescription()));
+                HandlerUtils.translateSplunkDestinationConfigurationToCfnModel(destination.splunkDestinationDescription()));
             model.setHttpEndpointDestinationConfiguration(
-                    HandlerUtils.translateHttpEndpointDestinationConfigurationToCfnModel(destination.httpEndpointDestinationDescription()));
+                HandlerUtils.translateHttpEndpointDestinationConfigurationToCfnModel(destination.httpEndpointDestinationDescription()));
         });
-        return model;
     }
 }

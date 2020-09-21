@@ -1,8 +1,6 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.val;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionStatus;
@@ -40,9 +38,8 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         return updateDeliveryStreamAndUpdateProgress(model, currentContext, logger);
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> updateDeliveryStreamAndUpdateProgress(ResourceModel model,
-        CallbackContext callbackContext,
-        final Logger logger) {
+    private ProgressEvent<ResourceModel, CallbackContext> updateDeliveryStreamAndUpdateProgress(
+        ResourceModel model, CallbackContext callbackContext, final Logger logger) {
         val deliveryStreamEncryptionStatus = callbackContext.getDeliveryStreamEncryptionStatus();
         if (callbackContext.getStabilizationRetriesRemaining() == 0) {
             throw new RuntimeException(TIMED_OUT_MESSAGE);
@@ -88,7 +85,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         }
 
         try {
-            updateDestination(model, logger, describeDeliveryStreamResp);
+            updateDestination(model, describeDeliveryStreamResp);
         }catch (final Exception e) {
             logger.log(String.format("UpdateDeliveryStream failed with exception %s", e.getMessage()));
             return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
@@ -97,7 +94,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         EncryptionAction encryptionAction = getEncryptionActionToPerform(
             model, describeDeliveryStreamResp);
         try {
-            updateEncryptionOnDeliveryStream(model, logger, encryptionAction);
+            updateEncryptionOnDeliveryStream(model, encryptionAction, logger);
         }catch (final Exception e) {
             logger.log(String.format("updateEncryptionOnDeliveryStream failed with exception %s", e.getMessage()));
             return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
@@ -112,8 +109,11 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         }
 
         // If no encryption action was performed, mark this as success as per existing flow, no need to callback.
-        if (encryptionAction == EncryptionAction.DO_NOTHING)
+        if (encryptionAction == EncryptionAction.DO_NOTHING) {
+            logger.log(String
+                .format("No Encryption action was performed. Marking the update handler as success."));
             return ProgressEvent.defaultSuccessHandler(model);
+        }
         // If the delivery stream encryption was either Started or stopped, it is supposed to have a status.
         val describeResp = firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName());
         return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
@@ -164,25 +164,27 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
 
 
     private void updateEncryptionOnDeliveryStream(
-        ResourceModel model,final Logger logger, EncryptionAction encryptionAction) {
+        final ResourceModel model, EncryptionAction encryptionAction, final Logger logger) {
         switch (encryptionAction){
             case DO_NOTHING:
                 break;
             case START:
+                logger.log(String.format("Starting delivery stream encryption for the delivery stream name %s", model.getDeliveryStreamName()));
                 firehoseAPIWrapper.startDeliveryStreamEncryption(model.getDeliveryStreamName(), HandlerUtils.translateDeliveryStreamEncryptionConfigurationInput(model.getDeliveryStreamEncryptionConfigurationInput()));
                 break;
             case STOP:
+                logger.log(String.format("Stopping delivery stream encryption for the delivery stream name %s", model.getDeliveryStreamName()));
                 firehoseAPIWrapper.stopDeliveryStreamEncryption(model.getDeliveryStreamName());
                 break;
             default:
-                logger.log(String.format("Action '%s' doesn't map to any of the available EncryptionAction.", encryptionAction
+                logger.log(String.format("Action '%s' doesn't map to any of the available EncryptionAction", encryptionAction
                     .toString()));
                 break;
         }
     }
 
     private void updateDestination(
-        ResourceModel model, final Logger logger, DescribeDeliveryStreamResponse describeResponse) {
+        ResourceModel model, DescribeDeliveryStreamResponse describeResponse) {
         val updateDestinationRequest = UpdateDestinationRequest.builder()
             .deliveryStreamName(model.getDeliveryStreamName())
             .currentDeliveryStreamVersionId(describeResponse.deliveryStreamDescription().versionId())
@@ -197,16 +199,14 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             firehoseAPIWrapper.updateDestination(updateDestinationRequest);
     }
 
-
-
     private void updateTagsOnDeliveryStream(ResourceModel model, Logger logger) {
         int tagsPageSize = 50;
         val existingTags = firehoseAPIWrapper
             .listAllTagsOnDeliveryStream(model.getDeliveryStreamName(), tagsPageSize);
         logger.log(String.format("Retrieved %d existing tags for the delivery stream name:%s",
             existingTags.size(), model.getDeliveryStreamName()));
-        val tagsToAdd = HandlerUtils.translateTagsToFirehoseTagType(model.getTags());
-        val tagKeysToRemove = elementsInFirstNotInSecond(existingTags, tagsToAdd);
+        val tagsToAdd = HandlerUtils.translateCFNModelTagsToFirehoseSDKTags(model.getTags());
+        val tagKeysToRemove = HandlerUtils.tagKeysInFirstListButNotInSecond(existingTags, tagsToAdd);
         if (tagKeysToRemove != null && !tagKeysToRemove.isEmpty()){
             firehoseAPIWrapper.untagDeliveryStream(model.getDeliveryStreamName(), tagKeysToRemove);
             logger.log(String
@@ -219,20 +219,6 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             logger.log(String
                 .format("Added/Replaced %d tags for the delivery stream name:%s", tagsToAdd.size(),
                     model.getDeliveryStreamName()));
-        }
-    }
-
-    private List<String> elementsInFirstNotInSecond(
-        List<software.amazon.awssdk.services.firehose.model.Tag> first,
-        List<software.amazon.awssdk.services.firehose.model.Tag> second) {
-        if (second == null) {
-            return first.stream().map(software.amazon.awssdk.services.firehose.model.Tag::key)
-                .collect(
-                    Collectors.toList());
-        } else {
-            return first.stream().filter(elem -> !second.contains(elem))
-                .map(software.amazon.awssdk.services.firehose.model.Tag::key).collect(
-                    Collectors.toList());
         }
     }
 }

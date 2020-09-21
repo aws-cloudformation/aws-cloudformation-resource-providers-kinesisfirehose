@@ -1,6 +1,5 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
-import java.util.List;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfiguration;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionStatus;
@@ -63,14 +62,10 @@ public class UpdateHandlerTest {
 
     @Test
     public void testUpdateDeliverySteamWithS3ExtendedConfigurationAndUpdateTags() {
-        final List<Tag> modelTagsToAdd = HandlerUtils
-            .translateTagsToCfnTagType(HandlerUtils.generateNFirehoseTags(5, 3));
-        final List<software.amazon.awssdk.services.firehose.model.Tag> existingFirehoseTags = HandlerUtils
-            .generateNFirehoseTags(5, 6);
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
-                .tags(modelTagsToAdd)
+                .tags(CFN_MODEL_TAGS)
                 .build();
 
         final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
@@ -89,7 +84,7 @@ public class UpdateHandlerTest {
         doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
                 any());
         final ListTagsForDeliveryStreamResponse listTagsForDeliveryStreamResponse = ListTagsForDeliveryStreamResponse.builder()
-            .tags(existingFirehoseTags)
+            .tags(EXISTING_FIREHOSE_RESPONSE_TAGS)
             .build();
         stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsForDeliveryStreamResponse);
 
@@ -681,10 +676,11 @@ public class UpdateHandlerTest {
 
 
     @Test
-    public void testUpdateDeliverySteamWithRedshiftConfiguration() {
+    public void testUpdateDeliverySteamWithRedshiftConfigurationAddTags() {
         final ResourceModel model = ResourceModel.builder()
                 .deliveryStreamName(DELIVERY_STREAM_NAME)
                 .redshiftDestinationConfiguration(REDSHIFT_DESTINATION_CONFIGURATION)
+                .tags(CFN_MODEL_TAGS)
                 .build();
 
         final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
@@ -721,6 +717,9 @@ public class UpdateHandlerTest {
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(ListTagsForDeliveryStreamRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(UntagDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(TagDeliveryStreamRequest.class), any());
     }
 
     @Test
@@ -816,8 +815,6 @@ public class UpdateHandlerTest {
                 .httpEndpointDestinationConfiguration(HTTP_ENDPOINT_DESTINATION_CONFIGURATION)
                 .build();
 
-        final List<software.amazon.awssdk.services.firehose.model.Tag> existingFirehoseTags = HandlerUtils
-            .generateNFirehoseTags(5, 6);
         final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
                 .deliveryStreamDescription(DeliveryStreamDescription.builder()
                         .deliveryStreamName(DELIVERY_STREAM_NAME)
@@ -834,7 +831,7 @@ public class UpdateHandlerTest {
         doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
                 any());
         final ListTagsForDeliveryStreamResponse listTagsForDeliveryStreamResponse = ListTagsForDeliveryStreamResponse.builder()
-            .tags(existingFirehoseTags)
+            .tags(EXISTING_FIREHOSE_RESPONSE_TAGS)
             .build();
         stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsForDeliveryStreamResponse);
 
@@ -855,6 +852,9 @@ public class UpdateHandlerTest {
         assertThat(response.getErrorCode()).isNull();
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(ListTagsForDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UntagDeliveryStreamRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(TagDeliveryStreamRequest.class), any());
     }
 
     private void stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(ListTagsForDeliveryStreamResponse response) {

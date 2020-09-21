@@ -27,6 +27,7 @@ import software.amazon.awssdk.services.firehose.model.UntagDeliveryStreamRespons
 import software.amazon.awssdk.services.firehose.model.UpdateDestinationRequest;
 import software.amazon.awssdk.services.firehose.model.UpdateDestinationResponse;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
+import software.amazon.cloudformation.proxy.Logger;
 
 @Builder
 public class FirehoseAPIWrapper {
@@ -48,7 +49,7 @@ public class FirehoseAPIWrapper {
                 .build();
             val resp = clientProxy.injectCredentialsAndInvokeV2(req,
                 firehoseClient::listTagsForDeliveryStream);
-            if (resp.hasTags()) {
+            if (resp.tags() != null && resp.tags().size() > 0) {
                 tags.addAll(resp.tags());
                 startTagKey = tags.get(tags.size() - 1).key();
                 hasMoreTags = resp.hasMoreTags();

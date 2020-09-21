@@ -354,7 +354,7 @@ public class ReadHandlerTest {
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any()))
                 .thenReturn(describeResponse);
 
-        val respTags  = HandlerUtils.generateNFirehoseTags(4);
+        val respTags  = EXISTING_FIREHOSE_RESPONSE_TAGS;
         final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse
             .builder()
             .tags(respTags.subList(0,2))
@@ -362,7 +362,7 @@ public class ReadHandlerTest {
             .build();
         final ListTagsForDeliveryStreamResponse listTagsResp2 = ListTagsForDeliveryStreamResponse
             .builder()
-            .tags(respTags.subList(2,4))
+            .tags(respTags.subList(2,5))
             .hasMoreTags(false)
             .build();
         doReturn(listTagsResp).doReturn(listTagsResp2).when(proxy).injectCredentialsAndInvokeV2(any(
@@ -384,7 +384,7 @@ public class ReadHandlerTest {
         assertThat(destination.getPrefix()).isEqualTo(PREFIX);
         assertThat(destination.getRoleARN()).isEqualTo(ROLE_ARN);
         validateCloudWatchConfig(destination.getCloudWatchLoggingOptions());
-        assertThat(HandlerUtils.validateTags(resourceModel.getTags(), HandlerUtils.translateTagsToCfnTagType(respTags))).as("Resource model doesn't contain all the tags form firehose response for the delivery stream").isTrue();
+        assertThat(HandlerUtils.validateCfnModelTags(resourceModel.getTags(), HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(respTags))).as("Resource model doesn't contain all the tags form firehose response for the delivery stream").isTrue();
     }
 
     @Test
