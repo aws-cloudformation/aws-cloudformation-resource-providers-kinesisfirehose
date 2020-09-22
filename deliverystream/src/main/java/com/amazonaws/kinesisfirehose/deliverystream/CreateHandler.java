@@ -10,9 +10,9 @@ import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
-import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import java.time.Duration;
 import lombok.val;
+import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import software.amazon.cloudformation.resource.IdentifierUtils;
 
 public class CreateHandler extends BaseHandler<CallbackContext> {
@@ -34,7 +34,9 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         final Logger logger) {
 
         final ResourceModel model = request.getDesiredResourceState();
-        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create()).clientProxy(proxy).build();
+        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create())
+            .clientProxy(proxy)
+            .build();
         logger.log(String.format("Create Handler called with deliveryStreamName %s", model.getDeliveryStreamName()));
         final CallbackContext currentContext = callbackContext == null
                 ? CallbackContext.builder()
@@ -42,7 +44,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .build()
                 : callbackContext;
 
-        if (callbackContext == null && HandlerUtils.doesDeliveryStreamExistWithName(model,
+        if (callbackContext == null && HandlerUtils.doesDeliveryStreamExistWithName(model.getDeliveryStreamName(),
             firehoseAPIWrapper)) {
             final Exception e = ResourceInUseException.builder()
                     .message("Firehose already exists with the name: " + model.getDeliveryStreamName())
@@ -120,9 +122,8 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .tags(HandlerUtils.translateCFNModelTagsToFirehoseSDKTags(model.getTags()))
                 .build();
 
-        //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that act on a DeliveryStream
-        //This is why DeliveryStream name is the physical resource ID and not the ARN
-//        val response = clientProxy.injectCredentialsAndInvokeV2(createDeliveryStreamRequest, firehoseClient::createDeliveryStream);
+        //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that
+        // act on a DeliveryStream. This is why DeliveryStream name is the physical resource ID and not the ARN
         val response = firehoseAPIWrapper.createDeliveryStream(createDeliveryStreamRequest);
         model.setArn(response.deliveryStreamARN());
         return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()

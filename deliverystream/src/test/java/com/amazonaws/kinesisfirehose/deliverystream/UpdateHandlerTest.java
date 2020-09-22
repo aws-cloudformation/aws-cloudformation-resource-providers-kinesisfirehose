@@ -393,7 +393,7 @@ public class UpdateHandlerTest {
         try {
             response = handler.handleRequest(proxy, request, callbackContext, logger);
         }
-        catch(Exception e){
+        catch(Exception e) {
             assertThat(e).isInstanceOf(RuntimeException.class).hasMessageContaining(
                 TIMED_OUT_MESSAGE);
         }
@@ -858,7 +858,7 @@ public class UpdateHandlerTest {
     }
 
     private void stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(ListTagsForDeliveryStreamResponse response) {
-        if (response == null){
+        if (response == null) {
             response =  ListTagsForDeliveryStreamResponse
                 .builder()
                 .build();

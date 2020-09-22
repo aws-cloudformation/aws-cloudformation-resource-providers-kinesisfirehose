@@ -6,6 +6,8 @@ import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionStatus;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.InvalidArgumentException;
+import software.amazon.awssdk.services.firehose.model.KeyType;
+import software.amazon.awssdk.services.firehose.model.ResourceNotFoundException;
 import software.amazon.awssdk.services.firehose.model.UpdateDestinationRequest;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
@@ -28,7 +30,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             final Logger logger) {
 
         final ResourceModel model = request.getDesiredResourceState();
-        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient( FirehoseClient.create()).clientProxy(proxy).build();
+        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create()).clientProxy(proxy).build();
 
         logger.log(String.format("Update Handler called with deliveryStream PrimaryId %s", model.getDeliveryStreamName()));
         val currentContext = callbackContext != null
@@ -47,7 +49,10 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         DescribeDeliveryStreamResponse describeDeliveryStreamResp;
         try {
             describeDeliveryStreamResp = firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName());
-        }catch (final Exception e) {
+        } catch (ResourceNotFoundException e) {
+            logger.log(String.format("DescribeDeliveryStream failed with exception %s", e.getMessage()));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+        } catch (final Exception e) {
             logger.log(String.format("DescribeDeliveryStream failed with exception %s", e.getMessage()));
             // In case describe fails(either on the first call or on the callbacks) we would set the
             // previous values of callbackContext, return and mark handler status as in-progress for cfn to retry.
@@ -61,13 +66,13 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         }
 
         // In case of callbacks.
-        if(deliveryStreamEncryptionStatus != null) {
+        if (deliveryStreamEncryptionStatus != null) {
             val currentDSEncryptionStatus = describeDeliveryStreamResp.deliveryStreamDescription().deliveryStreamEncryptionConfiguration().statusAsString();
             if (currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.ENABLED.toString())
                 || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLED.toString())) {
                 return ProgressEvent.defaultSuccessHandler(model);
             }
-            else if(currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString())
+            else if (currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString())
                 || currentDSEncryptionStatus.equals(DeliveryStreamEncryptionStatus.DISABLING_FAILED.toString())) {
                 val errMsg = getErrorMessageFromEncryptionStatus(currentDSEncryptionStatus);
                 Exception exp = InvalidArgumentException.builder()
@@ -125,8 +130,8 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             model);
     }
 
-    private String getErrorMessageFromEncryptionStatus(String deliveryStreamEncryptionStatus){
-        if (DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString().equals(deliveryStreamEncryptionStatus)){
+    private String getErrorMessageFromEncryptionStatus(String deliveryStreamEncryptionStatus) {
+        if (DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString().equals(deliveryStreamEncryptionStatus)) {
             return String.format(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "start");
         }
         return String.format(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "stop");
@@ -135,12 +140,19 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
     private EncryptionAction getEncryptionActionToPerform(ResourceModel model,
         DescribeDeliveryStreamResponse describeResponse) {
         EncryptionAction encryptionAction = EncryptionAction.DO_NOTHING;
-        val deliveryStreamEncryptionConfig = model.getDeliveryStreamEncryptionConfigurationInput();
-        val existingDeliveryStreamEncryptionConfig = describeResponse.deliveryStreamDescription().deliveryStreamEncryptionConfiguration();
-        if (deliveryStreamEncryptionConfig != null) {
+        val modelDSEncryptionConfig = model.getDeliveryStreamEncryptionConfigurationInput();
+        val existingDSEncryptionConfig = describeResponse.deliveryStreamDescription().deliveryStreamEncryptionConfiguration();
+        if (modelDSEncryptionConfig != null) {
+            // For CUSTOMER_MANAGED_CMK, if you invoke StartDeliveryStream Encryption again with the same KMS key, firehose returns an error.
+            if (KeyType.CUSTOMER_MANAGED_CMK.toString().equals(modelDSEncryptionConfig.getKeyType())
+                && KeyType.CUSTOMER_MANAGED_CMK.toString().equals(existingDSEncryptionConfig.keyType())
+                && existingDSEncryptionConfig.keyARN().equals(modelDSEncryptionConfig
+                .getKeyARN())) {
+                return encryptionAction;
+            }
             encryptionAction = EncryptionAction.START;
         }
-        else if (existingDeliveryStreamEncryptionConfig != null && !existingDeliveryStreamEncryptionConfig.statusAsString().equals(DeliveryStreamEncryptionStatus.DISABLED.toString())){
+        else if (existingDSEncryptionConfig != null && !existingDSEncryptionConfig.statusAsString().equals(DeliveryStreamEncryptionStatus.DISABLED.toString())) {
             encryptionAction = EncryptionAction.STOP;
         }
         return encryptionAction;
@@ -165,7 +177,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
 
     private void updateEncryptionOnDeliveryStream(
         final ResourceModel model, EncryptionAction encryptionAction, final Logger logger) {
-        switch (encryptionAction){
+        switch (encryptionAction) {
             case DO_NOTHING:
                 break;
             case START:
@@ -207,14 +219,14 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             existingTags.size(), model.getDeliveryStreamName()));
         val tagsToAdd = HandlerUtils.translateCFNModelTagsToFirehoseSDKTags(model.getTags());
         val tagKeysToRemove = HandlerUtils.tagKeysInFirstListButNotInSecond(existingTags, tagsToAdd);
-        if (tagKeysToRemove != null && !tagKeysToRemove.isEmpty()){
+        if (tagKeysToRemove != null && !tagKeysToRemove.isEmpty()) {
             firehoseAPIWrapper.untagDeliveryStream(model.getDeliveryStreamName(), tagKeysToRemove);
             logger.log(String
                 .format("Removed %d existing tags for the delivery stream name:%s",
                     tagKeysToRemove.size(),
                     model.getDeliveryStreamName()));
         }
-        if (tagsToAdd != null && !tagsToAdd.isEmpty()){
+        if (tagsToAdd != null && !tagsToAdd.isEmpty()) {
             firehoseAPIWrapper.tagDeliveryStream(model.getDeliveryStreamName(), tagsToAdd);
             logger.log(String
                 .format("Added/Replaced %d tags for the delivery stream name:%s", tagsToAdd.size(),

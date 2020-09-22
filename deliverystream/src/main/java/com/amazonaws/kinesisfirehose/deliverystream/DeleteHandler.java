@@ -34,7 +34,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
                 .build()
                 : callbackContext;
 
-        if (callbackContext == null && !HandlerUtils.doesDeliveryStreamExistWithName(model,
+        if (callbackContext == null && !HandlerUtils.doesDeliveryStreamExistWithName(model.getDeliveryStreamName(),
             firehoseAPIWrapper)) {
             final Exception e = ResourceNotFoundException.builder()
                     .message("Firehose doesn't exist with the name: " + model.getDeliveryStreamName())

@@ -1177,13 +1177,13 @@ class HandlerUtils {
 			.build();
 	}
 
-	static boolean doesDeliveryStreamExistWithName(final ResourceModel model,
+	static boolean doesDeliveryStreamExistWithName(final String deliveryStreamName,
 												   final FirehoseAPIWrapper firehoseAPIWrapper) {
-		if (StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
+		if (StringUtils.isNullOrEmpty(deliveryStreamName)) {
 			return false;
 		}
 		try {
-			firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName());
+			firehoseAPIWrapper.describeDeliveryStream(deliveryStreamName);
 			return true;
 		} catch (ResourceNotFoundException e) {
 			return false;
@@ -1211,8 +1211,8 @@ class HandlerUtils {
 	}
 
 	static boolean validateCfnModelTags(final List<com.amazonaws.kinesisfirehose.deliverystream.Tag> actual, final List<com.amazonaws.kinesisfirehose.deliverystream.Tag> expected) {
-		if(actual == null && expected == null) return true;
-		if(actual == null || expected == null) return false;
+		if (actual == null && expected == null) return true;
+		if (actual == null || expected == null) return false;
 		val missingTagsInModel = expected.stream().filter(tag -> !actual.contains(tag)).collect(Collectors.toList());
 		return actual.size() == expected.size() && missingTagsInModel.isEmpty();
 	}
