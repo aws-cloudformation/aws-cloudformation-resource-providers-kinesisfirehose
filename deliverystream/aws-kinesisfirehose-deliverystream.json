@@ -933,8 +933,6 @@
       "permissions": [
         "firehose:CreateDeliveryStream",
         "firehose:DescribeDeliveryStream",
-        "firehose:DescribeDeliveryStream",
-        "firehose:DescribeDeliveryStream",
         "firehose:TagDeliveryStream",
         "iam:GetRole",
         "iam:PassRole",

@@ -30,6 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import lombok.val;
@@ -385,6 +387,7 @@ public class ReadHandlerTest {
         assertThat(destination.getRoleARN()).isEqualTo(ROLE_ARN);
         validateCloudWatchConfig(destination.getCloudWatchLoggingOptions());
         assertThat(HandlerUtils.validateCfnModelTags(resourceModel.getTags(), HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(respTags))).as("Resource model doesn't contain all the tags form firehose response for the delivery stream").isTrue();
+        verify(proxy, times(2)).injectCredentialsAndInvokeV2(any(ListTagsForDeliveryStreamRequest.class), any());
     }
 
     @Test
