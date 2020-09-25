@@ -180,7 +180,7 @@
                 <version>0.8.4</version>
                 <configuration>
                     <excludes>
-                        <exclude>**/BaseConfiguration*</exclude>
+                        <exclude>**/Configuration*</exclude>
                         <exclude>**/BaseHandler*</exclude>
                         <exclude>**/HandlerWrapper*</exclude>
                         <exclude>**/ResourceModel*</exclude>
@@ -210,7 +210,7 @@
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>PACKAGE</element>
+                                    <element>CLASS</element>
                                     <limits>
                                         <limit>
                                             <counter>BRANCH</counter>
@@ -220,7 +220,7 @@
                                         <limit>
                                         <counter>LINE</counter>
                                         <value>COVEREDRATIO</value>
-                                        <minimum>0.80</minimum>
+                                        <minimum>0.8</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
