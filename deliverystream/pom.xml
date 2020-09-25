@@ -218,9 +218,9 @@
                                             <minimum>0.8</minimum>
                                         </limit>
                                         <limit>
-                                            <counter>INSTRUCTION</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>0.8</minimum>
+                                        <counter>LINE</counter>
+                                        <value>COVEREDRATIO</value>
+                                        <minimum>0.80</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

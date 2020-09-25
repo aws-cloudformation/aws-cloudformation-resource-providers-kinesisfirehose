@@ -7,15 +7,19 @@ import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.DestinationDescription;
+import software.amazon.awssdk.services.firehose.model.FirehoseException;
+import software.amazon.awssdk.services.firehose.model.KeyType;
 import software.amazon.awssdk.services.firehose.model.LimitExceededException;
 import software.amazon.awssdk.services.firehose.model.ListTagsForDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.ListTagsForDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
+import software.amazon.awssdk.services.firehose.model.ResourceNotFoundException;
 import software.amazon.awssdk.services.firehose.model.StartDeliveryStreamEncryptionRequest;
 import software.amazon.awssdk.services.firehose.model.StartDeliveryStreamEncryptionResponse;
 import software.amazon.awssdk.services.firehose.model.StopDeliveryStreamEncryptionRequest;
 import software.amazon.awssdk.services.firehose.model.StopDeliveryStreamEncryptionResponse;
 import software.amazon.awssdk.services.firehose.model.TagDeliveryStreamRequest;
+import software.amazon.awssdk.services.firehose.model.TagDeliveryStreamResponse;
 import software.amazon.awssdk.services.firehose.model.UntagDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.UpdateDestinationRequest;
 import software.amazon.awssdk.services.firehose.model.UpdateDestinationResponse;
@@ -145,16 +149,10 @@ public class UpdateHandlerTest {
                 .build())
             .build();
 
-        final UpdateDestinationResponse updateResponse = UpdateDestinationResponse.builder()
-            .build();
-        final StartDeliveryStreamEncryptionResponse startResponse = StartDeliveryStreamEncryptionResponse.builder()
-            .build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponse).thenReturn(describeResponseSSEEnabling);
-        doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any());
-        doReturn(startResponse).when(proxy).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class),
-            any());
+        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
+        stubStartDeliveryStreamEncryptionWithProvidedOrEmptyResponse(null);
         stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(null);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
@@ -260,6 +258,65 @@ public class UpdateHandlerTest {
             StopDeliveryStreamEncryptionRequest.class), any());
     }
 
+    // Delivery stream from ENABLING to ENABLING with Ongoing stabalization
+    @Test
+    public void testUpdateDeliverySteamWithSSEEncryptionEnablingWithOngoingStabalization() {
+        final ResourceModel model = ResourceModel.builder()
+            .deliveryStreamName(DELIVERY_STREAM_NAME)
+            .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+            .deliveryStreamEncryptionConfigurationInput(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT)
+            .build();
+
+        final DescribeDeliveryStreamResponse describeResponseSSEEnabled = DescribeDeliveryStreamResponse.builder()
+            .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
+                .versionId("version-0001")
+                .deliveryStreamEncryptionConfiguration(
+                    DeliveryStreamEncryptionConfiguration.builder()
+                        .keyARN(KMS_KEY_ARN)
+                        .keyType(DELIVERY_STREAM_KEY_TYPE)
+                        .status(DeliveryStreamEncryptionStatus.ENABLING)
+                        .build())
+                .destinations(DestinationDescription.builder()
+                    .destinationId("destination-0001")
+                    .build())
+                .build())
+            .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+            any())).thenReturn(describeResponseSSEEnabled);
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        CallbackContext callbackContext = CallbackContext.builder()
+            .deliveryStreamStatus(DeliveryStreamStatus.ACTIVE.toString())
+            .deliveryStreamEncryptionStatus(DeliveryStreamEncryptionStatus.ENABLING.toString())
+            .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
+            .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+            = handler.handleRequest(proxy, request, callbackContext, logger);
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
+            .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
+        assertThat(response.getResourceModel().getDeliveryStreamEncryptionConfigurationInput())
+            .isEqualToComparingFieldByField(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT);
+        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+        assertThat(response.getCallbackContext().getStabilizationRetriesRemaining()).isEqualTo(NUMBER_OF_STATUS_POLL_RETRIES-1);
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(
+            StopDeliveryStreamEncryptionRequest.class), any());
+    }
+
     // Delivery stream from ENABLING to ENABLED.
     @Test
     public void testUpdateDeliverySteamWithSSEEncryptionEnabled() {
@@ -317,6 +374,63 @@ public class UpdateHandlerTest {
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(
             StopDeliveryStreamEncryptionRequest.class), any());
     }
+
+    // Don't start encryption for Delivery stream with the same Customer Managed CMK.
+    @Test
+    public void testUpdateDeliverySteamWithSSESameCustomerManagedCMK() {
+        final ResourceModel model = ResourceModel.builder()
+            .deliveryStreamName(DELIVERY_STREAM_NAME)
+            .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+            .deliveryStreamEncryptionConfigurationInput(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT)
+            .build();
+
+        final DescribeDeliveryStreamResponse describeResponseSSEEnabled = DescribeDeliveryStreamResponse.builder()
+            .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
+                .versionId("version-0001")
+                .deliveryStreamEncryptionConfiguration(
+                    DeliveryStreamEncryptionConfiguration.builder()
+                        .keyARN(DELIVERY_STREAM_KEY_ARN)
+                        .keyType(KeyType.CUSTOMER_MANAGED_CMK)
+                        .status(DeliveryStreamEncryptionStatus.ENABLED)
+                        .build())
+                .destinations(DestinationDescription.builder()
+                    .destinationId("destination-0001")
+                    .build())
+                .build())
+            .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+            any())).thenReturn(describeResponseSSEEnabled);
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
+        final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse.builder().build();
+        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsResp);
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+            = handler.handleRequest(proxy, request, null, logger);
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel().getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
+        assertThat(response.getResourceModel().getExtendedS3DestinationConfiguration())
+            .isEqualToComparingFieldByField(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL);
+        assertThat(response.getResourceModel().getDeliveryStreamEncryptionConfigurationInput())
+            .isEqualToComparingFieldByField(DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT);
+        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isNull();
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(
+            StopDeliveryStreamEncryptionRequest.class), any());
+    }
+
 
     // Delivery stream from ENABLING to ENABLING_FAILED.
     @Test
@@ -442,17 +556,10 @@ public class UpdateHandlerTest {
                     .build())
                 .build())
             .build();
-        final UpdateDestinationResponse updateResponse = UpdateDestinationResponse.builder()
-            .build();
-        final StopDeliveryStreamEncryptionResponse stopResponse = StopDeliveryStreamEncryptionResponse.builder()
-            .build();
-
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponseSSEEnabled).thenReturn(describeResponseSSEDisabling);
-        doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-            any());
-        doReturn(stopResponse).when(proxy).injectCredentialsAndInvokeV2(any(StopDeliveryStreamEncryptionRequest.class),
-            any());
+        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
+        stubStopDeliveryStreamEncryptionWithProvidedOrEmptyResponse(null);
         stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(null);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
@@ -564,6 +671,63 @@ public class UpdateHandlerTest {
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class), any());
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(
+            StopDeliveryStreamEncryptionRequest.class), any());
+    }
+
+    @Test
+    public void testUpdateDeliveryStreamDescribeDSThrowsResourceNotFoundException(){
+        final ResourceModel model = ResourceModel.builder()
+            .deliveryStreamName(DELIVERY_STREAM_NAME)
+            .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+            .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+            any())).thenThrow(ResourceNotFoundException.builder().build());
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+            = handler.handleRequest(proxy, request, null, logger);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel()).isNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.NotFound);
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(
+            StopDeliveryStreamEncryptionRequest.class), any());
+    }
+
+    @Test
+    public void testUpdateDeliveryStreamDescribeDSThrowsFirehoseException(){
+        final ResourceModel model = ResourceModel.builder()
+            .deliveryStreamName(DELIVERY_STREAM_NAME)
+            .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+            .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+            any())).thenThrow(FirehoseException.builder().build());
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+            = handler.handleRequest(proxy, request, null, logger);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getResourceModel()).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.IN_PROGRESS);
+        assertThat(response.getResourceModels()).isNull();
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(StartDeliveryStreamEncryptionRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(
             StopDeliveryStreamEncryptionRequest.class), any());
     }
 
@@ -824,12 +988,8 @@ public class UpdateHandlerTest {
                                 .build())
                         .build())
                 .build();
-        final UpdateDestinationResponse updateResponse = UpdateDestinationResponse.builder()
-                .build();
-        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
-                any())).thenReturn(describeResponse);
-        doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
-                any());
+        stubDescribeDeliveryStreamWithProvidedOrEmptyResponse(describeResponse);
+        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
         final ListTagsForDeliveryStreamResponse listTagsForDeliveryStreamResponse = ListTagsForDeliveryStreamResponse.builder()
             .tags(EXISTING_FIREHOSE_RESPONSE_TAGS)
             .build();
@@ -857,6 +1017,52 @@ public class UpdateHandlerTest {
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(TagDeliveryStreamRequest.class), any());
     }
 
+    @Test
+    public void testUpdateDeliverySteamUpdateTagsFailsWithException() {
+        final ResourceModel model = ResourceModel.builder()
+            .deliveryStreamName(DELIVERY_STREAM_NAME)
+            .extendedS3DestinationConfiguration(EXTENDED_S3_DESTINATION_CONFIGURATION_FULL)
+            .tags(CFN_MODEL_TAGS)
+            .build();
+
+        final DescribeDeliveryStreamResponse describeResponse = DescribeDeliveryStreamResponse.builder()
+            .deliveryStreamDescription(DeliveryStreamDescription.builder()
+                .deliveryStreamName(DELIVERY_STREAM_NAME)
+                .versionId("version-0001")
+                .destinations(DestinationDescription.builder()
+                    .destinationId("destination-0001")
+                    .build())
+                .build())
+            .build();
+        final UpdateDestinationResponse updateResponse = UpdateDestinationResponse.builder()
+            .build();
+        when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
+            any())).thenReturn(describeResponse);
+        doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
+            any());
+        final ListTagsForDeliveryStreamResponse listTagsForDeliveryStreamResponse = ListTagsForDeliveryStreamResponse.builder()
+            .tags(EXISTING_FIREHOSE_RESPONSE_TAGS)
+            .build();
+        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsForDeliveryStreamResponse);
+        doThrow(FirehoseException.builder().build()).when(proxy).injectCredentialsAndInvokeV2(any(UntagDeliveryStreamRequest.class), any());
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response
+            = handler.handleRequest(proxy, request, null, logger);
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).isNull();
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.ServiceInternalError);
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(ListTagsForDeliveryStreamRequest.class), any());
+        verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UntagDeliveryStreamRequest.class), any());
+        verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(TagDeliveryStreamRequest.class), any());
+    }
+
     private void stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(ListTagsForDeliveryStreamResponse response) {
         if (response == null) {
             response =  ListTagsForDeliveryStreamResponse
@@ -867,4 +1073,50 @@ public class UpdateHandlerTest {
             ListTagsForDeliveryStreamRequest.class),
             any());
     }
+
+
+    private void stubDescribeDeliveryStreamWithProvidedOrEmptyResponse(DescribeDeliveryStreamResponse response) {
+        if (response == null) {
+            response =  DescribeDeliveryStreamResponse
+                .builder()
+                .build();
+        }
+        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
+            DescribeDeliveryStreamRequest.class),
+            any());
+    }
+
+    private void stubUpdateDestinationWithProvidedOrEmptyResponse(UpdateDestinationResponse response) {
+        if (response == null) {
+            response =  UpdateDestinationResponse
+                .builder()
+                .build();
+        }
+        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
+            UpdateDestinationRequest.class),
+            any());
+    }
+
+    private void stubStopDeliveryStreamEncryptionWithProvidedOrEmptyResponse(StopDeliveryStreamEncryptionResponse response) {
+        if (response == null) {
+            response =  StopDeliveryStreamEncryptionResponse
+                .builder()
+                .build();
+        }
+        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
+            StopDeliveryStreamEncryptionRequest.class),
+            any());
+    }
+
+    private void stubStartDeliveryStreamEncryptionWithProvidedOrEmptyResponse(StartDeliveryStreamEncryptionResponse response) {
+        if (response == null) {
+            response =  StartDeliveryStreamEncryptionResponse
+                .builder()
+                .build();
+        }
+        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
+            StartDeliveryStreamEncryptionRequest.class),
+            any());
+    }
+
 }

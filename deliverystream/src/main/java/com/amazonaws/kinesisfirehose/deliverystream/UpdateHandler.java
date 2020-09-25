@@ -144,8 +144,9 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         val existingDSEncryptionConfig = describeResponse.deliveryStreamDescription().deliveryStreamEncryptionConfiguration();
         if (modelDSEncryptionConfig != null) {
             // For CUSTOMER_MANAGED_CMK, if you invoke StartDeliveryStream Encryption again with the same KMS key, firehose returns an error.
-            if (KeyType.CUSTOMER_MANAGED_CMK.toString().equals(modelDSEncryptionConfig.getKeyType())
-                && KeyType.CUSTOMER_MANAGED_CMK.toString().equals(existingDSEncryptionConfig.keyType())
+            if (existingDSEncryptionConfig != null
+                && KeyType.CUSTOMER_MANAGED_CMK.toString().equals(modelDSEncryptionConfig.getKeyType())
+                && KeyType.CUSTOMER_MANAGED_CMK.toString().equals(existingDSEncryptionConfig.keyType().toString())
                 && existingDSEncryptionConfig.keyARN().equals(modelDSEncryptionConfig
                 .getKeyARN())) {
                 return encryptionAction;
@@ -178,8 +179,6 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
     private void updateEncryptionOnDeliveryStream(
         final ResourceModel model, EncryptionAction encryptionAction, final Logger logger) {
         switch (encryptionAction) {
-            case DO_NOTHING:
-                break;
             case START:
                 logger.log(String.format("Starting delivery stream encryption for the delivery stream name %s", model.getDeliveryStreamName()));
                 firehoseAPIWrapper.startDeliveryStreamEncryption(model.getDeliveryStreamName(), HandlerUtils.translateDeliveryStreamEncryptionConfigurationInput(model.getDeliveryStreamEncryptionConfigurationInput()));
@@ -189,8 +188,6 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
                 firehoseAPIWrapper.stopDeliveryStreamEncryption(model.getDeliveryStreamName());
                 break;
             default:
-                logger.log(String.format("Action '%s' doesn't map to any of the available EncryptionAction", encryptionAction
-                    .toString()));
                 break;
         }
     }

@@ -332,7 +332,7 @@ public class DeliveryStreamTestHelper  {
 
     public final static DeliveryStreamEncryptionConfigurationInput DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT =  DeliveryStreamEncryptionConfigurationInput.builder()
         .keyARN(DELIVERY_STREAM_KEY_ARN)
-        .keyType(DELIVERY_STREAM_KEY_TYPE)
+        .keyType(KeyType.CUSTOMER_MANAGED_CMK.toString())
         .build();
 
     public final static List<Tag> CFN_MODEL_TAGS =  HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(HandlerUtils.generateNFirehoseTags(5, 3));
