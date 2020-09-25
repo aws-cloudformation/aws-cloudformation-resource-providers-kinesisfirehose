@@ -44,7 +44,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
         model.setDeliveryStreamEncryptionConfigurationInput(HandlerUtils.translateDeliveryStreamEncryptionConfigurationInputToCfnModel(deliveryStreamDescription.deliveryStreamEncryptionConfiguration()));
         setDestinationDescription(model, deliveryStreamDescription.destinations());
         val tags = firehoseAPIWrapper
-                .listAllTagsOnDeliveryStream(model.getDeliveryStreamName(), HandlerUtils.LIST_TAGS_PAGE_SIZE);
+                .listAllTagsOnDeliveryStream(model.getDeliveryStreamName(), HandlerUtils.LIST_TAGS_RESULT_LIMIT);
         logger.log(String.format("Hydrating deliveryStream model with %d retrieved tags on the delivery stream name %s", tags.size(), model.getDeliveryStreamName()));
         model.setTags(HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(tags.isEmpty() ? null : tags));
     }

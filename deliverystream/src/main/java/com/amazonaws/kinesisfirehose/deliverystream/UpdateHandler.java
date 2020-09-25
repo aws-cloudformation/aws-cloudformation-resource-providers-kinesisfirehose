@@ -210,7 +210,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
 
     private void updateTagsOnDeliveryStream(ResourceModel model, Logger logger) {
         val existingTags = firehoseAPIWrapper
-            .listAllTagsOnDeliveryStream(model.getDeliveryStreamName(), HandlerUtils.LIST_TAGS_PAGE_SIZE);
+            .listAllTagsOnDeliveryStream(model.getDeliveryStreamName(), HandlerUtils.LIST_TAGS_RESULT_LIMIT);
         logger.log(String.format("Retrieved %d existing tags for the delivery stream name:%s",
             existingTags.size(), model.getDeliveryStreamName()));
         val tagsToAdd = HandlerUtils.translateCFNModelTagsToFirehoseSDKTags(model.getTags());

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 class HandlerUtils {
 
-	static final int LIST_TAGS_PAGE_SIZE = 50;
+	static final int LIST_TAGS_RESULT_LIMIT = 50;
 
 	static software.amazon.awssdk.services.firehose.model.KinesisStreamSourceConfiguration translateKinesisStreamSourceConfiguration(final KinesisStreamSourceConfiguration kinesisStreamSourceConfiguration) {
 		if (kinesisStreamSourceConfiguration == null) {

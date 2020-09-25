@@ -14,6 +14,8 @@ import software.amazon.awssdk.services.firehose.model.DeleteDeliveryStreamRespon
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamEncryptionConfigurationInput;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamResponse;
+import software.amazon.awssdk.services.firehose.model.ListDeliveryStreamsRequest;
+import software.amazon.awssdk.services.firehose.model.ListDeliveryStreamsResponse;
 import software.amazon.awssdk.services.firehose.model.ListTagsForDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.StartDeliveryStreamEncryptionRequest;
 import software.amazon.awssdk.services.firehose.model.StartDeliveryStreamEncryptionResponse;
@@ -37,7 +39,7 @@ public class FirehoseAPIWrapper {
     @NonNull
     private FirehoseClient firehoseClient;
 
-    public List<Tag> listAllTagsOnDeliveryStream(final String deliveryStreamName, final int pageSize) {
+    public List<Tag> listAllTagsOnDeliveryStream(final String deliveryStreamName, final int resultLimit) {
         String startTagKey = null;
         Boolean hasMoreTags = false;
         List<Tag> tags = new ArrayList<>();
@@ -45,7 +47,7 @@ public class FirehoseAPIWrapper {
             val req = ListTagsForDeliveryStreamRequest.builder()
                 .deliveryStreamName(deliveryStreamName)
                 .exclusiveStartTagKey(startTagKey)
-                .limit(pageSize)
+                .limit(resultLimit)
                 .build();
             val resp = clientProxy.injectCredentialsAndInvokeV2(req,
                 firehoseClient::listTagsForDeliveryStream);
@@ -126,4 +128,13 @@ public class FirehoseAPIWrapper {
         return clientProxy.injectCredentialsAndInvokeV2(updateDestinationRequest,
             firehoseClient::updateDestination);
     }
+
+    public ListDeliveryStreamsResponse listDeliveryStreams(String startDeliveryStreamName, int resultLimit){
+        val req = ListDeliveryStreamsRequest.builder()
+            .limit(resultLimit)
+            .exclusiveStartDeliveryStreamName(startDeliveryStreamName)
+            .build();
+        return clientProxy.injectCredentialsAndInvokeV2(req, firehoseClient::listDeliveryStreams);
+    }
+
 }
