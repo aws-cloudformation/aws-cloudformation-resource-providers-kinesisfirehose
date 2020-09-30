@@ -1,8 +1,6 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
 import software.amazon.awssdk.services.firehose.FirehoseClient;
-import software.amazon.awssdk.services.firehose.model.ListDeliveryStreamsRequest;
-import software.amazon.awssdk.services.firehose.model.ListDeliveryStreamsResponse;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
@@ -18,8 +16,7 @@ import lombok.val;
 public class ListHandler extends BaseHandler<CallbackContext> {
     static final int LIST_RESULT_LIMIT = 50;
 
-    private AmazonWebServicesClientProxy clientProxy;
-    private final FirehoseClient firehoseClient = FirehoseClient.create();
+    private FirehoseAPIWrapper firehoseAPIWrapper;
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
@@ -28,12 +25,12 @@ public class ListHandler extends BaseHandler<CallbackContext> {
             final CallbackContext callbackContext,
             final Logger logger) {
 
-        clientProxy = proxy;
-
-
+        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create())
+            .clientProxy(proxy)
+            .build();
         List<ResourceModel> models = new ArrayList<>();
         try {
-            val response = listDeliveryStream(request);
+            val response = firehoseAPIWrapper.listDeliveryStreams(request.getNextToken(), LIST_RESULT_LIMIT);
             val deliveryStreams = response.deliveryStreamNames();
             models.addAll(deliveryStreams.stream()
                     .map(deliverystream ->
@@ -55,11 +52,4 @@ public class ListHandler extends BaseHandler<CallbackContext> {
         }
     }
 
-    private ListDeliveryStreamsResponse listDeliveryStream(ResourceHandlerRequest<ResourceModel> request) {
-        val req = ListDeliveryStreamsRequest.builder()
-                .limit(LIST_RESULT_LIMIT)
-                .exclusiveStartDeliveryStreamName(request.getNextToken())
-                .build();
-        return clientProxy.injectCredentialsAndInvokeV2(req, firehoseClient::listDeliveryStreams);
-    }
 }

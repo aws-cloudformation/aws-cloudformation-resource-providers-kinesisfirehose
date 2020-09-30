@@ -2,6 +2,7 @@ package com.amazonaws.kinesisfirehose.deliverystream;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import software.amazon.awssdk.services.firehose.model.*;
 import software.amazon.awssdk.services.firehose.model.HiveJsonSerDe;
 import software.amazon.awssdk.services.firehose.model.OrcSerDe;
@@ -46,6 +47,8 @@ public class DeliveryStreamTestHelper  {
     public static final String ACCESS_KEY = "ACCESS_KEY";
     public static final String ENDPOINT_NAME = "NAME";
     public static final String CONTENT_ENCODE = "NONE";
+    public static final String DELIVERY_STREAM_KEY_ARN = "DELIVERY_STREAM_KEY_ARN";
+    public static final String DELIVERY_STREAM_KEY_TYPE = "DELIVERY_STREAM_KEY_TYPE";
 
 
     public static final CloudWatchLoggingOptions CLOUD_WATCH_LOGGING_OPTIONS = new CloudWatchLoggingOptions(true, "LogGroupName", "LogStreamName");
@@ -325,4 +328,14 @@ public class DeliveryStreamTestHelper  {
             .s3BackupMode(BACKUP_MODE)
             .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
             .build();
+
+
+    public final static DeliveryStreamEncryptionConfigurationInput DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT =  DeliveryStreamEncryptionConfigurationInput.builder()
+        .keyARN(DELIVERY_STREAM_KEY_ARN)
+        .keyType(KeyType.CUSTOMER_MANAGED_CMK.toString())
+        .build();
+
+    public final static List<Tag> CFN_MODEL_TAGS =  HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(HandlerUtils.generateNFirehoseTags(5, 3));
+
+    public final static List<software.amazon.awssdk.services.firehose.model.Tag> EXISTING_FIREHOSE_RESPONSE_TAGS = HandlerUtils.generateNFirehoseTags(5, 6);
 }
