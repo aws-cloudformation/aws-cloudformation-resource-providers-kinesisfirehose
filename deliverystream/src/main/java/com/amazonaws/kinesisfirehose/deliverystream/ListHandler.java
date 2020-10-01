@@ -1,5 +1,6 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.amazonaws.kinesisfirehose.deliverystream.HandlerUtils.HandlerType;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
@@ -48,7 +49,7 @@ public class ListHandler extends BaseHandler<CallbackContext> {
                     .status(OperationStatus.SUCCESS)
                     .build();
         } catch (Exception e) {
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.LIST));
         }
     }
 

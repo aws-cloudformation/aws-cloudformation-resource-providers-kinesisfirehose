@@ -531,7 +531,7 @@ public class CreateHandlerTest {
         final ProgressEvent<ResourceModel, CallbackContext> response =
             handler.handleRequest(proxy, request, null, logger);
         assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
-        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.ResourceConflict);
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.AlreadyExists);
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(CreateDeliveryStreamRequest.class), any());
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class), any());
     }

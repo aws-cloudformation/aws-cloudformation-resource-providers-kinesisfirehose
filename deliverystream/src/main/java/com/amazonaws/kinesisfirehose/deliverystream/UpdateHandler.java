@@ -1,5 +1,6 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.amazonaws.kinesisfirehose.deliverystream.HandlerUtils.HandlerType;
 import java.time.Duration;
 import lombok.val;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
@@ -51,7 +52,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             describeDeliveryStreamResp = firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName());
         } catch (ResourceNotFoundException e) {
             logger.log(String.format("DescribeDeliveryStream failed with exception %s", e.getMessage()));
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.UPDATE));
         } catch (final Exception e) {
             logger.log(String.format("DescribeDeliveryStream failed with exception %s", e.getMessage()));
             // In case describe fails(either on the first call or on the callbacks) we would set the
@@ -77,7 +78,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
                 val errMsg = getErrorMessageFromEncryptionStatus(currentDSEncryptionStatus);
                 Exception exp = InvalidArgumentException.builder()
                     .message(errMsg).build();
-                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp));
+                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp, HandlerType.UPDATE));
             } else {
                 return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
                         .deliveryStreamStatus(describeDeliveryStreamResp.deliveryStreamDescription().deliveryStreamStatusAsString())
@@ -93,7 +94,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             updateDestination(model, describeDeliveryStreamResp);
         }catch (final Exception e) {
             logger.log(String.format("UpdateDeliveryStream failed with exception %s", e.getMessage()));
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.UPDATE));
         }
 
         EncryptionAction encryptionAction = getEncryptionActionToPerform(
@@ -102,7 +103,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             updateEncryptionOnDeliveryStream(model, encryptionAction, logger);
         }catch (final Exception e) {
             logger.log(String.format("updateEncryptionOnDeliveryStream failed with exception %s", e.getMessage()));
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.UPDATE));
         }
 
         try {
@@ -110,7 +111,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         } catch (final Exception e) {
             logger.log(String
                 .format("updateTagsOnDeliveryStream failed with exception %s", e.getMessage()));
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e,HandlerType.UPDATE));
         }
 
         // If no encryption action was performed, mark this as success as per existing flow, no need to callback.
@@ -205,7 +206,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             .splunkDestinationUpdate(HandlerUtils.translateSplunkDestinationUpdate(model.getSplunkDestinationConfiguration()))
             .httpEndpointDestinationUpdate(HandlerUtils.translateHttpEndpointDestinationUpdate(model.getHttpEndpointDestinationConfiguration()))
             .build();
-            firehoseAPIWrapper.updateDestination(updateDestinationRequest);
+        firehoseAPIWrapper.updateDestination(updateDestinationRequest);
     }
 
     private void updateTagsOnDeliveryStream(ResourceModel model, Logger logger) {

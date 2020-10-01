@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.amazonaws.kinesisfirehose.deliverystream</groupId>
-    <artifactId>aws-kinesisfirehose-deliverystream-handler</artifactId>
-    <name>aws-kinesisfirehose-deliverystream-handler</name>
+    <artifactId>aws-kinesisfirehose-deliverystream</artifactId>
+    <name>aws-kinesisfirehose-deliverystream</name>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 

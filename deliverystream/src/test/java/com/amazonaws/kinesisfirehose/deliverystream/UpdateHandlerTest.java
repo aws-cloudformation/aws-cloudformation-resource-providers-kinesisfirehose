@@ -90,7 +90,7 @@ public class UpdateHandlerTest {
         final ListTagsForDeliveryStreamResponse listTagsForDeliveryStreamResponse = ListTagsForDeliveryStreamResponse.builder()
             .tags(EXISTING_FIREHOSE_RESPONSE_TAGS)
             .build();
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsForDeliveryStreamResponse);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, listTagsForDeliveryStreamResponse);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -151,9 +151,9 @@ public class UpdateHandlerTest {
 
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponse).thenReturn(describeResponseSSEEnabling);
-        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
-        stubStartDeliveryStreamEncryptionWithProvidedOrEmptyResponse(null);
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(null);
+        TestHelpers.stubUpdateDestinationWithProvidedOrEmptyResponse(proxy, null);
+        TestHelpers.stubStartDeliveryStreamEncryptionWithProvidedOrEmptyResponse(proxy, null);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, null);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -407,9 +407,9 @@ public class UpdateHandlerTest {
             .desiredResourceState(model)
             .build();
 
-        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
+        TestHelpers.stubUpdateDestinationWithProvidedOrEmptyResponse(proxy, null);
         final ListTagsForDeliveryStreamResponse listTagsResp = ListTagsForDeliveryStreamResponse.builder().build();
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsResp);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, listTagsResp);
 
         final ProgressEvent<ResourceModel, CallbackContext> response
             = handler.handleRequest(proxy, request, null, logger);
@@ -558,9 +558,9 @@ public class UpdateHandlerTest {
             .build();
         when(proxy.injectCredentialsAndInvokeV2(any(DescribeDeliveryStreamRequest.class),
             any())).thenReturn(describeResponseSSEEnabled).thenReturn(describeResponseSSEDisabling);
-        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
-        stubStopDeliveryStreamEncryptionWithProvidedOrEmptyResponse(null);
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(null);
+        TestHelpers.stubUpdateDestinationWithProvidedOrEmptyResponse(proxy, null);
+        TestHelpers.stubStopDeliveryStreamEncryptionWithProvidedOrEmptyResponse(proxy, null);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, null);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -862,7 +862,7 @@ public class UpdateHandlerTest {
                 any())).thenReturn(describeResponse);
         doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
                 any());
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(null);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, null);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -908,7 +908,7 @@ public class UpdateHandlerTest {
                 any())).thenReturn(describeResponse);
         doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
                 any());
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(null);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, null);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -951,7 +951,7 @@ public class UpdateHandlerTest {
                 any())).thenReturn(describeResponse);
         doReturn(updateResponse).when(proxy).injectCredentialsAndInvokeV2(any(UpdateDestinationRequest.class),
                 any());
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(null);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, null);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -988,12 +988,12 @@ public class UpdateHandlerTest {
                                 .build())
                         .build())
                 .build();
-        stubDescribeDeliveryStreamWithProvidedOrEmptyResponse(describeResponse);
-        stubUpdateDestinationWithProvidedOrEmptyResponse(null);
+        TestHelpers.stubDescribeDeliveryStreamWithProvidedOrEmptyResponse(proxy, describeResponse);
+        TestHelpers.stubUpdateDestinationWithProvidedOrEmptyResponse(proxy, null);
         final ListTagsForDeliveryStreamResponse listTagsForDeliveryStreamResponse = ListTagsForDeliveryStreamResponse.builder()
             .tags(EXISTING_FIREHOSE_RESPONSE_TAGS)
             .build();
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsForDeliveryStreamResponse);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, listTagsForDeliveryStreamResponse);
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
                 .desiredResourceState(model)
@@ -1043,7 +1043,7 @@ public class UpdateHandlerTest {
         final ListTagsForDeliveryStreamResponse listTagsForDeliveryStreamResponse = ListTagsForDeliveryStreamResponse.builder()
             .tags(EXISTING_FIREHOSE_RESPONSE_TAGS)
             .build();
-        stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(listTagsForDeliveryStreamResponse);
+        TestHelpers.stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(proxy, listTagsForDeliveryStreamResponse);
         doThrow(FirehoseException.builder().build()).when(proxy).injectCredentialsAndInvokeV2(any(UntagDeliveryStreamRequest.class), any());
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
@@ -1062,61 +1062,4 @@ public class UpdateHandlerTest {
         verify(proxy, times(1)).injectCredentialsAndInvokeV2(any(UntagDeliveryStreamRequest.class), any());
         verify(proxy, times(0)).injectCredentialsAndInvokeV2(any(TagDeliveryStreamRequest.class), any());
     }
-
-    private void stubListTagsForDeliveryStreamWithProvidedOrEmptyResponse(ListTagsForDeliveryStreamResponse response) {
-        if (response == null) {
-            response =  ListTagsForDeliveryStreamResponse
-                .builder()
-                .build();
-        }
-        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
-            ListTagsForDeliveryStreamRequest.class),
-            any());
-    }
-
-
-    private void stubDescribeDeliveryStreamWithProvidedOrEmptyResponse(DescribeDeliveryStreamResponse response) {
-        if (response == null) {
-            response =  DescribeDeliveryStreamResponse
-                .builder()
-                .build();
-        }
-        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
-            DescribeDeliveryStreamRequest.class),
-            any());
-    }
-
-    private void stubUpdateDestinationWithProvidedOrEmptyResponse(UpdateDestinationResponse response) {
-        if (response == null) {
-            response =  UpdateDestinationResponse
-                .builder()
-                .build();
-        }
-        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
-            UpdateDestinationRequest.class),
-            any());
-    }
-
-    private void stubStopDeliveryStreamEncryptionWithProvidedOrEmptyResponse(StopDeliveryStreamEncryptionResponse response) {
-        if (response == null) {
-            response =  StopDeliveryStreamEncryptionResponse
-                .builder()
-                .build();
-        }
-        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
-            StopDeliveryStreamEncryptionRequest.class),
-            any());
-    }
-
-    private void stubStartDeliveryStreamEncryptionWithProvidedOrEmptyResponse(StartDeliveryStreamEncryptionResponse response) {
-        if (response == null) {
-            response =  StartDeliveryStreamEncryptionResponse
-                .builder()
-                .build();
-        }
-        doReturn(response).when(proxy).injectCredentialsAndInvokeV2(any(
-            StartDeliveryStreamEncryptionRequest.class),
-            any());
-    }
-
 }

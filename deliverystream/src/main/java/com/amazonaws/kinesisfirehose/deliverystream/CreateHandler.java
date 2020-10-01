@@ -1,9 +1,11 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.amazonaws.kinesisfirehose.deliverystream.HandlerUtils.HandlerType;
 import com.amazonaws.util.StringUtils;
 import com.google.common.annotations.VisibleForTesting;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamRequest;
+import software.amazon.awssdk.services.firehose.model.DeliveryStreamDescription;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
 import software.amazon.awssdk.services.firehose.model.InvalidArgumentException;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
@@ -49,7 +51,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
             final Exception e = ResourceInUseException.builder()
                     .message("Firehose already exists with the name: " + model.getDeliveryStreamName())
                     .build();
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.CREATE));
         }
 
         if (StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
@@ -76,14 +78,14 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 return createDeliveryStream(model);
             } catch (final Exception e) {
                 logger.log(String.format("createDeliveryStream failed with exception %s", e.getMessage()));
-                return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+                return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.CREATE));
             }
         } else {
             // If for some reason during the stabilization phase, a call like getDeliveryStreamStatus fails, catch the exception, and
             // retry stabilizing if more attempts are remaining.
             String currentDeliveryStreamStatus = "";
             try {
-                 currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+                currentDeliveryStreamStatus = firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName()).deliveryStreamDescription().deliveryStreamStatusAsString();
             } catch (final Exception e) {
                 logger.log(String.format("Error getting Delivery Stream Status. Exception %s", e.getMessage()));
             }
@@ -95,7 +97,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 // for CREATING_FAILED status.
                 Exception exp = InvalidArgumentException.builder()
                     .message(String.format(CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT,currentDeliveryStreamStatus)).build();
-                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp));
+                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp, HandlerType.CREATE));
             } else {
                 return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
                                 .deliveryStreamStatus(currentDeliveryStreamStatus)
@@ -127,15 +129,15 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         val response = firehoseAPIWrapper.createDeliveryStream(createDeliveryStreamRequest);
         model.setArn(response.deliveryStreamARN());
         return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                .deliveryStreamStatus(getDeliveryStreamStatus(model))
+                .deliveryStreamStatus(getDeliveryStreamStatus(model.getDeliveryStreamName()))
                 .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
                 .build(),
                 (int) Duration.ofSeconds(CALLBACK_DELAY_IN_SECONDS).getSeconds(),
                 model);
     }
 
-    private String getDeliveryStreamStatus(final ResourceModel model) {
-        return firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName()).deliveryStreamDescription().deliveryStreamStatusAsString();
+    private String getDeliveryStreamStatus(final String deliveryStreamName) {
+        return firehoseAPIWrapper.describeDeliveryStream(deliveryStreamName).deliveryStreamDescription().deliveryStreamStatusAsString();
     }
 
     @VisibleForTesting

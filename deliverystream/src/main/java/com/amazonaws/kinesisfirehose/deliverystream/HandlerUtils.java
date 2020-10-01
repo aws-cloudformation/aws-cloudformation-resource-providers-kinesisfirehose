@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.firehose.model.HttpEndpointCommonAttribut
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import software.amazon.cloudformation.proxy.Logger;
 
 class HandlerUtils {
 
@@ -1172,11 +1173,14 @@ class HandlerUtils {
 
 	static com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamEncryptionConfigurationInput translateDeliveryStreamEncryptionConfigurationInputToCfnModel(
 		final DeliveryStreamEncryptionConfiguration deliveryStreamEncryptionConfiguration) {
-		return deliveryStreamEncryptionConfiguration == null ? null : com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamEncryptionConfigurationInput
-			.builder()
-			.keyARN(deliveryStreamEncryptionConfiguration.keyARN())
-			.keyType(deliveryStreamEncryptionConfiguration.keyTypeAsString())
-			.build();
+		return deliveryStreamEncryptionConfiguration == null
+			|| (DeliveryStreamEncryptionStatus.DISABLED.toString()
+			.equals(deliveryStreamEncryptionConfiguration.statusAsString())) ? null
+			: com.amazonaws.kinesisfirehose.deliverystream.DeliveryStreamEncryptionConfigurationInput
+				.builder()
+				.keyARN(deliveryStreamEncryptionConfiguration.keyARN())
+				.keyType(deliveryStreamEncryptionConfiguration.keyTypeAsString())
+				.build();
 	}
 
 	static boolean doesDeliveryStreamExistWithName(final String deliveryStreamName,
@@ -1244,5 +1248,52 @@ class HandlerUtils {
 				.filter(keyInFirst -> !keysInSecond.contains(keyInFirst))
 				.collect(Collectors.toList());
 		}
+	}
+
+	public enum HandlerType {
+		CREATE("CREATE"),
+		UPDATE("UPDATE"),
+		DELETE("DELETE"),
+		READ("READ"),
+		LIST("LIST");
+		private final String value;
+
+		private HandlerType(String value) {
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return String.valueOf(value);
+		}
+	}
+
+	public static void setDestinationDescription(final ResourceModel model, final List<DestinationDescription> descriptions) {
+		descriptions.stream().forEach(destination -> {
+			// If the delivery stream is created with extendedS3Destinations, when you query firehose to populate the state of the model, firehose populates both the
+			// s3destination and extendedS3Destination. We need our model to truly reflect the state of the structure with which it was created which was only with extendedS3Destination.
+			if (destination.extendedS3DestinationDescription() == null) {
+				model.setS3DestinationConfiguration(
+					HandlerUtils.translateS3DestinationConfigurationToCfnModel(destination.s3DestinationDescription()));
+			}
+			model.setExtendedS3DestinationConfiguration(
+				HandlerUtils.translateExtendedS3DestinationConfigurationToCfnModel(destination.extendedS3DestinationDescription()));
+			model.setRedshiftDestinationConfiguration(
+				HandlerUtils.translateRedshiftDestinationToCfnModel(destination.redshiftDestinationDescription()));
+			model.setElasticsearchDestinationConfiguration(
+				HandlerUtils.translateElasticsearchDestinationConfigurationToCfnModel(destination.elasticsearchDestinationDescription()));
+			model.setSplunkDestinationConfiguration(
+				HandlerUtils.translateSplunkDestinationConfigurationToCfnModel(destination.splunkDestinationDescription()));
+			model.setHttpEndpointDestinationConfiguration(
+				HandlerUtils.translateHttpEndpointDestinationConfigurationToCfnModel(destination.httpEndpointDestinationDescription()));
+		});
+	}
+	public static void hydrateDeliveryStreamResource(ResourceModel model, final Logger logger, DeliveryStreamDescription deliveryStreamDescription, List<software.amazon.awssdk.services.firehose.model.Tag> tags) {
+		model.setArn(deliveryStreamDescription.deliveryStreamARN());
+		model.setKinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfigurationToCfnModel(deliveryStreamDescription.source()));
+		model.setDeliveryStreamType(deliveryStreamDescription.deliveryStreamTypeAsString());
+		model.setDeliveryStreamEncryptionConfigurationInput(HandlerUtils.translateDeliveryStreamEncryptionConfigurationInputToCfnModel(deliveryStreamDescription.deliveryStreamEncryptionConfiguration()));
+		HandlerUtils.setDestinationDescription(model, deliveryStreamDescription.destinations());
+		model.setTags(HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(tags.isEmpty() ? null : tags));
 	}
 }

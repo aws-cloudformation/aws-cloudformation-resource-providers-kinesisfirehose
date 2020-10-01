@@ -120,7 +120,7 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
+        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DELIVERY_STREAM_TYPE);
         val destination = resourceModel.getExtendedS3DestinationConfiguration();
         assertThat(destination.getBucketARN()).isEqualTo(BUCKET_ARN);
         assertThat(destination.getBufferingHints().getIntervalInSeconds()).isEqualTo(INTERVAL_IN_SECONDS);
@@ -166,7 +166,7 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
+        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DELIVERY_STREAM_TYPE);
         val destination = resourceModel.getExtendedS3DestinationConfiguration();
         assertThat(destination.getBucketARN()).isEqualTo(BUCKET_ARN);
         assertThat(destination.getBufferingHints().getIntervalInSeconds()).isEqualTo(INTERVAL_IN_SECONDS);
@@ -211,7 +211,7 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
+        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DELIVERY_STREAM_TYPE);
         val destination = resourceModel.getRedshiftDestinationConfiguration();
         assertThat(destination.getClusterJDBCURL()).isEqualTo("clusterJDBCURL");
         assertThat(destination.getUsername()).isEqualTo("username");
@@ -262,7 +262,7 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
+        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DELIVERY_STREAM_TYPE);
         val destination = resourceModel.getRedshiftDestinationConfiguration();
         assertThat(destination.getS3BackupMode()).isEqualTo(BACKUP_MODE);
         validateCloudWatchConfig(destination.getCloudWatchLoggingOptions());
@@ -306,7 +306,7 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
+        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DELIVERY_STREAM_TYPE);
         val destination = resourceModel.getExtendedS3DestinationConfiguration();
         val dataformatConversionConfg = destination.getDataFormatConversionConfiguration();
         assertThat(dataformatConversionConfg.getEnabled()).isEqualTo(true);
@@ -375,7 +375,7 @@ public class ReadHandlerTest {
 
         val resourceModel = response.getResourceModel();
         assertThat(resourceModel.getDeliveryStreamName()).isEqualTo(DELIVERY_STREAM_NAME);
-        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DeliveryStreamStatus.ACTIVE.toString());
+        assertThat(resourceModel.getDeliveryStreamType()).isEqualTo(DELIVERY_STREAM_TYPE);
         val destination = resourceModel.getS3DestinationConfiguration();
         assertThat(destination.getBucketARN()).isEqualTo(BUCKET_ARN);
         assertThat(destination.getBufferingHints().getIntervalInSeconds()).isEqualTo(INTERVAL_IN_SECONDS);

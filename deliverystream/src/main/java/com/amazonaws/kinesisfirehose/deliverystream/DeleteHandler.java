@@ -1,5 +1,6 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.amazonaws.kinesisfirehose.deliverystream.HandlerUtils.HandlerType;
 import java.time.Duration;
 import lombok.val;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
@@ -39,7 +40,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
             final Exception e = ResourceNotFoundException.builder()
                     .message("Firehose doesn't exist with the name: " + model.getDeliveryStreamName())
                     .build();
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.DELETE));
         }
 
         // This Lambda will continually be re-invoked with the current state of the instance, finally succeeding when state stabilizes.
@@ -63,7 +64,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
                 firehoseAPIWrapper.deleteDeliveryStream(model.getDeliveryStreamName(), allowForceDelete);
             } catch (final Exception e) {
                 logger.log(String.format("deleteDeliveryStream failed with exception %s", e.getMessage()));
-                return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+                return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.DELETE));
             }
         } else {
             stabilizationRetriesRemaining = callbackContext.getStabilizationRetriesRemaining() - 1;
@@ -71,7 +72,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
 
         val currentDeliveryStreamStatus = getDeliveryStreamStatus(firehoseAPIWrapper, model);
         if (currentDeliveryStreamStatus.equals(DELIVERY_STREAM_DELETED)) {
-            return ProgressEvent.defaultSuccessHandler(model);
+            return ProgressEvent.defaultSuccessHandler(null);
         } else {
             return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
                             .deliveryStreamStatus(currentDeliveryStreamStatus)
