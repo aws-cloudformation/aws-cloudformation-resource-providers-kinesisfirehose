@@ -85,7 +85,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
             // retry stabilizing if more attempts are remaining.
             String currentDeliveryStreamStatus = "";
             try {
-                currentDeliveryStreamStatus = firehoseAPIWrapper.describeDeliveryStream(model.getDeliveryStreamName()).deliveryStreamDescription().deliveryStreamStatusAsString();
+                currentDeliveryStreamStatus = getDeliveryStreamStatus(model.getDeliveryStreamName());
             } catch (final Exception e) {
                 logger.log(String.format("Error getting Delivery Stream Status. Exception %s", e.getMessage()));
             }
