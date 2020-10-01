@@ -979,7 +979,8 @@
   "createOnlyProperties": [
     "/properties/DeliveryStreamName",
     "/properties/DeliveryStreamType",
-    "/properties/ElasticsearchDestinationConfiguration/VpcConfiguration"
+    "/properties/ElasticsearchDestinationConfiguration/VpcConfiguration",
+    "/properties/KinesisStreamSourceConfiguration"
   ],
   "primaryIdentifier": [
     "/properties/DeliveryStreamName"
