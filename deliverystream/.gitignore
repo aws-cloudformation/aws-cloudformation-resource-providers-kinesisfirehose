@@ -16,8 +16,13 @@ out/
 # auto-generated files
 target/
 .hypothesis
+build/
+*.zip
+.hypothesis
+build/
+*.zip
+.hypothesis
 
 # our logs
-rpdk.log
+rpdk.log*
 docs/
-rpdk.log.1

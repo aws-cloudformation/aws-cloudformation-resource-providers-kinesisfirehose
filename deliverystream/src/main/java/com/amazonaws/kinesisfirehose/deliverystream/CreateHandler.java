@@ -1,21 +1,21 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.amazonaws.kinesisfirehose.deliverystream.HandlerUtils.HandlerType;
 import com.amazonaws.util.StringUtils;
 import com.google.common.annotations.VisibleForTesting;
+import java.util.ArrayList;
 import software.amazon.awssdk.services.firehose.FirehoseClient;
 import software.amazon.awssdk.services.firehose.model.CreateDeliveryStreamRequest;
-import software.amazon.awssdk.services.firehose.model.DescribeDeliveryStreamRequest;
 import software.amazon.awssdk.services.firehose.model.DeliveryStreamStatus;
+import software.amazon.awssdk.services.firehose.model.InvalidArgumentException;
 import software.amazon.awssdk.services.firehose.model.ResourceInUseException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
+import java.time.Duration;
+import lombok.val;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import software.amazon.cloudformation.resource.IdentifierUtils;
-
-import java.time.Duration;
-
-import lombok.val;
 
 public class CreateHandler extends BaseHandler<CallbackContext> {
     private static final String STACK_NAME_TAG_KEY = "aws:cloudformation:stack-name";
@@ -23,9 +23,10 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
     private static final int MAX_LENGTH_DELIVERY_STREAM_NAME = 64;
     static final int NUMBER_OF_STATUS_POLL_RETRIES = 130;
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream to become ACTIVE.";
+    static final String CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT = "Unable to Create Delivery Stream. Delivery stream status is %s";
 
-    private AmazonWebServicesClientProxy clientProxy;
-    private final FirehoseClient firehoseClient = FirehoseClient.create();
+    private static final int CALLBACK_DELAY_IN_SECONDS = 30;
+    private FirehoseAPIWrapper firehoseAPIWrapper;
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
@@ -35,8 +36,9 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         final Logger logger) {
 
         final ResourceModel model = request.getDesiredResourceState();
-        clientProxy = proxy;
-
+        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create())
+            .clientProxy(proxy)
+            .build();
         logger.log(String.format("Create Handler called with deliveryStreamName %s", model.getDeliveryStreamName()));
         final CallbackContext currentContext = callbackContext == null
                 ? CallbackContext.builder()
@@ -44,12 +46,12 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .build()
                 : callbackContext;
 
-        if(callbackContext == null && HandlerUtils.doesDeliveryStreamExistWithName(model,
-                clientProxy, firehoseClient)) {
+        if (callbackContext == null && HandlerUtils.doesDeliveryStreamExistWithName(model.getDeliveryStreamName(),
+            firehoseAPIWrapper)) {
             final Exception e = ResourceInUseException.builder()
                     .message("Firehose already exists with the name: " + model.getDeliveryStreamName())
                     .build();
-            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+            return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.CREATE));
         }
 
         if (StringUtils.isNullOrEmpty(model.getDeliveryStreamName())) {
@@ -58,12 +60,17 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
             );
         }
 
+        if (request.getDesiredResourceTags() != null && !request.getDesiredResourceTags().isEmpty()) {
+            val modelTags = new ArrayList<Tag>();
+            request.getDesiredResourceTags().forEach((key, val) -> modelTags.add(new Tag(key, val)));
+            model.setTags(modelTags);
+        }
         // This Lambda will continually be re-invoked with the current state of the instance, finally succeeding when state stabilizes.
         return createDeliveryStreamAndUpdateProgress(model, currentContext, logger);
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStreamAndUpdateProgress(ResourceModel model,
-                                                                                                CallbackContext callbackContext,
+    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStreamAndUpdateProgress(final ResourceModel model,
+                                                                                                final CallbackContext callbackContext,
                                                                                                 final Logger logger) {
         val deliveryStreamStatus = callbackContext.getDeliveryStreamStatus();
 
@@ -72,28 +79,48 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         }
 
         if (deliveryStreamStatus == null) {
+            if (model.getTags() != null) {
+                logger.log(String.format("%d resource Tags would be applied for create on the delivery stream name %s", model.getTags().size(), model.getDeliveryStreamName()));
+            }
+            if (model.getDeliveryStreamEncryptionConfigurationInput() != null) {
+                logger.log(String.format("Delivery Stream Encryption would be enabled on the delivery stream name %s", model.getDeliveryStreamName()));
+            }
             try {
                 return createDeliveryStream(model);
             } catch (final Exception e) {
                 logger.log(String.format("createDeliveryStream failed with exception %s", e.getMessage()));
-                return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e));
+                return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.CREATE));
             }
         } else {
-            val currentDeliveryStreamStatus = getDeliveryStreamStatus(model);
+            // If for some reason during the stabilization phase, a call like getDeliveryStreamStatus fails, catch the exception, and
+            // retry stabilizing if more attempts are remaining.
+            String currentDeliveryStreamStatus = "";
+            try {
+                currentDeliveryStreamStatus = getDeliveryStreamStatus(model.getDeliveryStreamName());
+            } catch (final Exception e) {
+                logger.log(String.format("Error getting Delivery Stream Status. Exception %s", e.getMessage()));
+            }
+
             if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.ACTIVE.toString())) {
                 return ProgressEvent.defaultSuccessHandler(model);
+            } else if (currentDeliveryStreamStatus.equals(DeliveryStreamStatus.CREATING_FAILED.toString())) {
+                // Creating an InvalidArgumentException instead of InvalidKMSException since that would be too specific of a cause
+                // for CREATING_FAILED status.
+                Exception exp = InvalidArgumentException.builder()
+                    .message(String.format(CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT,currentDeliveryStreamStatus)).build();
+                return ProgressEvent.defaultFailureHandler(exp, ExceptionMapper.mapToHandlerErrorCode(exp, HandlerType.CREATE));
             } else {
                 return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
                                 .deliveryStreamStatus(currentDeliveryStreamStatus)
                                 .stabilizationRetriesRemaining(callbackContext.getStabilizationRetriesRemaining() - 1)
                                 .build(),
-                        (int) Duration.ofSeconds(30).getSeconds(),
+                        (int) Duration.ofSeconds(CALLBACK_DELAY_IN_SECONDS).getSeconds(),
                         model);
             }
         }
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStream(ResourceModel model) {
+    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStream(final ResourceModel model) {
         val createDeliveryStreamRequest = CreateDeliveryStreamRequest.builder()
                 .deliveryStreamName(model.getDeliveryStreamName())
                 .deliveryStreamType(model.getDeliveryStreamType())
@@ -104,26 +131,24 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .kinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfiguration(model.getKinesisStreamSourceConfiguration()))
                 .splunkDestinationConfiguration(HandlerUtils.translateSplunkDestinationConfiguration(model.getSplunkDestinationConfiguration()))
                 .httpEndpointDestinationConfiguration(HandlerUtils.translateHttpEndpointDestinationConfiguration(model.getHttpEndpointDestinationConfiguration()))
+                .deliveryStreamEncryptionConfigurationInput(HandlerUtils.translateDeliveryStreamEncryptionConfigurationInput(model.getDeliveryStreamEncryptionConfigurationInput()))
+                .tags(HandlerUtils.translateCFNModelTagsToFirehoseSDKTags(model.getTags()))
                 .build();
 
-        //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that act on a DeliveryStream
-        //This is why DeliveryStream name is the physical resource ID and not the ARN
-        val response = clientProxy.injectCredentialsAndInvokeV2(createDeliveryStreamRequest, firehoseClient::createDeliveryStream);
+        //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that
+        // act on a DeliveryStream. This is why DeliveryStream name is the physical resource ID and not the ARN
+        val response = firehoseAPIWrapper.createDeliveryStream(createDeliveryStreamRequest);
         model.setArn(response.deliveryStreamARN());
         return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                .deliveryStreamStatus(getDeliveryStreamStatus(model))
+                .deliveryStreamStatus(getDeliveryStreamStatus(model.getDeliveryStreamName()))
                 .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
                 .build(),
-                (int)Duration.ofSeconds(30).getSeconds(),
+                (int) Duration.ofSeconds(CALLBACK_DELAY_IN_SECONDS).getSeconds(),
                 model);
     }
 
-    private String getDeliveryStreamStatus(ResourceModel model) {
-        val response = clientProxy.injectCredentialsAndInvokeV2(DescribeDeliveryStreamRequest.builder()
-                .deliveryStreamName(model.getDeliveryStreamName())
-                .build(),
-                firehoseClient::describeDeliveryStream);
-        return response.deliveryStreamDescription().deliveryStreamStatusAsString();
+    private String getDeliveryStreamStatus(final String deliveryStreamName) {
+        return firehoseAPIWrapper.describeDeliveryStream(deliveryStreamName).deliveryStreamDescription().deliveryStreamStatusAsString();
     }
 
     @VisibleForTesting

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CallbackContext {
-	private Integer stabilizationRetriesRemaining;
-	private String deliveryStreamStatus;
+
+    private Integer stabilizationRetriesRemaining;
+    private String deliveryStreamStatus;
+    private String deliveryStreamEncryptionStatus;
 }

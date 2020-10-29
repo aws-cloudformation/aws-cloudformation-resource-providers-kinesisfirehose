@@ -1,0 +1,10 @@
+{
+  "Arn": "Invalid_ARN",
+  "DeliveryStreamName": "delivery_stream_name",
+  "DeliveryStreamType": "delivery_stream_type",
+  "ExtendedS3DestinationConfiguration": {
+    "BucketARN": "bucket_arn",
+    "ErrorOutputPrefix": "",
+    "RoleARN": "role_arn"
+  }
+}

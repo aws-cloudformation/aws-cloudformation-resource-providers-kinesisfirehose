@@ -6,6 +6,9 @@
     "Arn": {
       "type": "string"
     },
+    "DeliveryStreamEncryptionConfigurationInput": {
+      "$ref": "#/definitions/DeliveryStreamEncryptionConfigurationInput"
+    },
     "DeliveryStreamName": {
       "type": "string",
       "minLength": 1,
@@ -39,9 +42,39 @@
     },
     "HttpEndpointDestinationConfiguration": {
       "$ref": "#/definitions/HttpEndpointDestinationConfiguration"
+    },
+    "Tags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Tag"
+      },
+      "minItems": 1,
+      "maxItems": 50
     }
   },
   "definitions": {
+    "DeliveryStreamEncryptionConfigurationInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "KeyARN": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "arn:.*"
+        },
+        "KeyType": {
+          "type": "string",
+          "enum": [
+            "AWS_OWNED_CMK",
+            "CUSTOMER_MANAGED_CMK"
+          ]
+        }
+      },
+      "required": [
+        "KeyType"
+      ]
+    },
     "SplunkDestinationConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -873,6 +906,26 @@
       "required": [
         "Url"
       ]
+    },
+    "Tag": {
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "pattern": "^(?!aws:)[\\p{L}\\p{Z}\\p{N}_.:\\/=+\\-@%]*$",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "Value": {
+          "type": "string",
+          "pattern": "^[\\p{L}\\p{Z}\\p{N}_.:\\/=+\\-@%]*$",
+          "minLength": 0,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "Key"
+      ]
     }
   },
   "handlers": {
@@ -881,24 +934,37 @@
         "firehose:CreateDeliveryStream",
         "firehose:DescribeDeliveryStream",
         "iam:GetRole",
-        "iam:PassRole"
+        "iam:PassRole",
+        "kms:CreateGrant",
+        "kms:DescribeKey"
       ]
     },
     "read": {
       "permissions": [
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "firehose:ListTagsForDeliveryStream"
       ]
     },
     "update": {
       "permissions": [
         "firehose:UpdateDestination",
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "firehose:StartDeliveryStreamEncryption",
+        "firehose:StopDeliveryStreamEncryption",
+        "firehose:ListTagsForDeliveryStream",
+        "firehose:TagDeliveryStream",
+        "firehose:UntagDeliveryStream",
+        "kms:CreateGrant",
+        "kms:RevokeGrant",
+        "kms:DescribeKey"
       ]
     },
     "delete": {
       "permissions": [
         "firehose:DeleteDeliveryStream",
-        "firehose:DescribeDeliveryStream"
+        "firehose:DescribeDeliveryStream",
+        "kms:RevokeGrant",
+        "kms:DescribeKey"
       ]
     },
     "list": {
@@ -913,7 +979,8 @@
   "createOnlyProperties": [
     "/properties/DeliveryStreamName",
     "/properties/DeliveryStreamType",
-    "/properties/ElasticsearchDestinationConfiguration/VpcConfiguration"
+    "/properties/ElasticsearchDestinationConfiguration/VpcConfiguration",
+    "/properties/KinesisStreamSourceConfiguration"
   ],
   "primaryIdentifier": [
     "/properties/DeliveryStreamName"

@@ -52,6 +52,20 @@ public class ListHandlerTest {
                 proxy, request, null, logger);
         assertThat(response.getResourceModels().isEmpty()).isTrue();
         assertThat(response.getNextToken()).isNull();
+
+
+        // Test another branch where you got set of results in the ListDeliveryStreamResponse, but Next token is null.
+        final ListDeliveryStreamsResponse listResponse2 = ListDeliveryStreamsResponse.builder()
+            .deliveryStreamNames(ImmutableList.of("deliveryStreamName1"))
+            .hasMoreDeliveryStreams(false)
+            .build();
+
+        when(proxy.injectCredentialsAndInvokeV2(any(ListDeliveryStreamsRequest.class), any()))
+            .thenReturn(listResponse2);
+        val response2 = listHandler.handleRequest(
+            proxy, request, null, logger);
+        assertThat(response2.getResourceModels().isEmpty()).isFalse();
+        assertThat(response2.getNextToken()).isNull();
     }
 
     @Test
