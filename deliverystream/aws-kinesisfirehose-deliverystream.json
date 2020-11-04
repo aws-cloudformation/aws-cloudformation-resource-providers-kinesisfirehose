@@ -36,6 +36,9 @@
     },
     "SplunkDestinationConfiguration": {
       "$ref": "#/definitions/SplunkDestinationConfiguration"
+    },
+    "HttpEndpointDestinationConfiguration": {
+      "$ref": "#/definitions/HttpEndpointDestinationConfiguration"
     }
   },
   "definitions": {
@@ -88,6 +91,46 @@
         "HECEndpointType"
       ]
     },
+    "HttpEndpointDestinationConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "RoleARN": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "arn:.*"
+        },
+        "EndpointConfiguration": {
+          "$ref": "#/definitions/HttpEndpointConfiguration"
+        },
+        "RequestConfiguration": {
+          "$ref": "#/definitions/HttpEndpointRequestConfiguration"
+        },
+        "BufferingHints": {
+          "$ref": "#/definitions/BufferingHints"
+        },
+        "CloudWatchLoggingOptions": {
+          "$ref": "#/definitions/CloudWatchLoggingOptions"
+        },
+        "ProcessingConfiguration": {
+          "$ref": "#/definitions/ProcessingConfiguration"
+        },
+        "RetryOptions": {
+          "$ref": "#/definitions/RetryOptions"
+        },
+        "S3BackupMode": {
+          "type": "string"
+        },
+        "S3Configuration": {
+          "$ref": "#/definitions/S3DestinationConfiguration"
+        }
+      },
+      "required": [
+        "EndpointConfiguration",
+        "S3Configuration"
+      ]
+    },
     "KinesisStreamSourceConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -101,7 +144,7 @@
         "RoleARN": {
           "type": "string",
           "minLength": 1,
-          "maxlength": 512,
+          "maxLength": 512,
           "pattern": "arn:.*"
         }
       },
@@ -456,6 +499,15 @@
         }
       }
     },
+    "RetryOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "DurationInSeconds": {
+          "type": "integer"
+        }
+      }
+    },
     "DataFormatConversionConfiguration": {
       "type": "object",
       "additionalProperties": false,
@@ -755,6 +807,72 @@
           "type": "boolean"
         }
       }
+    },
+    "HttpEndpointRequestConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ContentEncoding": {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "GZIP"
+          ]
+        },
+        "CommonAttributes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/HttpEndpointCommonAttribute"
+          },
+          "minItems": 0,
+          "maxItems": 50
+        }
+      }
+    },
+    "HttpEndpointCommonAttribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "AttributeName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "AttributeValue": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1024
+        }
+      },
+      "required": [
+        "AttributeName",
+        "AttributeValue"
+      ]
+    },
+    "HttpEndpointConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "AccessKey": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4096
+        },
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "Url"
+      ]
     }
   },
   "handlers": {

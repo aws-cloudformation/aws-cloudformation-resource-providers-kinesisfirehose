@@ -49,6 +49,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
                 .redshiftDestinationUpdate(HandlerUtils.translateRedshiftDestinationUpdate(model.getRedshiftDestinationConfiguration()))
                 .elasticsearchDestinationUpdate(HandlerUtils.translateElasticsearchDestinationUpdate(model.getElasticsearchDestinationConfiguration()))
                 .splunkDestinationUpdate(HandlerUtils.translateSplunkDestinationUpdate(model.getSplunkDestinationConfiguration()))
+                .httpEndpointDestinationUpdate(HandlerUtils.translateHttpEndpointDestinationUpdate(model.getHttpEndpointDestinationConfiguration()))
                 .build();
 
         clientProxy.injectCredentialsAndInvokeV2(updateDestinationRequest, firehoseClient::updateDestination);

@@ -103,6 +103,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 .elasticsearchDestinationConfiguration(HandlerUtils.translateElasticsearchDestinationConfiguration(model.getElasticsearchDestinationConfiguration()))
                 .kinesisStreamSourceConfiguration(HandlerUtils.translateKinesisStreamSourceConfiguration(model.getKinesisStreamSourceConfiguration()))
                 .splunkDestinationConfiguration(HandlerUtils.translateSplunkDestinationConfiguration(model.getSplunkDestinationConfiguration()))
+                .httpEndpointDestinationConfiguration(HandlerUtils.translateHttpEndpointDestinationConfiguration(model.getHttpEndpointDestinationConfiguration()))
                 .build();
 
         //Firehose API returns an ARN on create, but does not accept ARN for any of its operations that act on a DeliveryStream

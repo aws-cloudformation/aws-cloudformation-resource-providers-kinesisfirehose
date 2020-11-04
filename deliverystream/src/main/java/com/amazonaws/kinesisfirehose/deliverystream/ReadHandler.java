@@ -64,6 +64,8 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
                     HandlerUtils.translateElasticsearchDestinationConfigurationToCfnModel(destination.elasticsearchDestinationDescription()));
             model.setSplunkDestinationConfiguration(
                     HandlerUtils.translateSplunkDestinationConfigurationToCfnModel(destination.splunkDestinationDescription()));
+            model.setHttpEndpointDestinationConfiguration(
+                    HandlerUtils.translateHttpEndpointDestinationConfigurationToCfnModel(destination.httpEndpointDestinationDescription()));
         });
         return model;
     }
