@@ -1,5 +1,6 @@
 package com.amazonaws.kinesisfirehose.deliverystream;
 
+import com.amazonaws.kinesisfirehose.deliverystream.HandlerUtils.HandlerType;
 import lombok.Builder;
 import software.amazon.awssdk.services.firehose.model.FirehoseException;
 import software.amazon.awssdk.services.firehose.model.InvalidArgumentException;
@@ -18,8 +19,11 @@ public final class ExceptionMapper {
 	 * Translates the Network Manager's client exception to a Cfn Handler Error Code.
 	 * Ref: https://w.amazon.com/bin/view/AWS21/Design/Uluru/HandlerContract
 	 */
-	 static HandlerErrorCode mapToHandlerErrorCode(final Exception exception) {
+	static HandlerErrorCode mapToHandlerErrorCode(final Exception exception, final HandlerType handlerType) {
 		if (exception instanceof ResourceInUseException) {
+			if(handlerType.toString().equals(HandlerType.CREATE.toString())) {
+				return HandlerErrorCode.AlreadyExists;
+			}
 			return HandlerErrorCode.ResourceConflict;
 		} else if (exception instanceof InvalidArgumentException) {
 			return HandlerErrorCode.InvalidRequest;

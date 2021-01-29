@@ -2,6 +2,9 @@ package com.amazonaws.kinesisfirehose.deliverystream;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import software.amazon.awssdk.services.firehose.model.*;
 import software.amazon.awssdk.services.firehose.model.HiveJsonSerDe;
 import software.amazon.awssdk.services.firehose.model.OrcSerDe;
@@ -46,6 +49,8 @@ public class DeliveryStreamTestHelper  {
     public static final String ACCESS_KEY = "ACCESS_KEY";
     public static final String ENDPOINT_NAME = "NAME";
     public static final String CONTENT_ENCODE = "NONE";
+    public static final String DELIVERY_STREAM_KEY_ARN = "DELIVERY_STREAM_KEY_ARN";
+    public static final String DELIVERY_STREAM_KEY_TYPE = "DELIVERY_STREAM_KEY_TYPE";
 
 
     public static final CloudWatchLoggingOptions CLOUD_WATCH_LOGGING_OPTIONS = new CloudWatchLoggingOptions(true, "LogGroupName", "LogStreamName");
@@ -325,4 +330,26 @@ public class DeliveryStreamTestHelper  {
             .s3BackupMode(BACKUP_MODE)
             .s3DestinationDescription(S_3_DESTINATION_DESCRIPTION_RESPONSE)
             .build();
+
+
+    public final static DeliveryStreamEncryptionConfigurationInput DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT_CUSTOMER_MANAGED_CMK =  DeliveryStreamEncryptionConfigurationInput.builder()
+        .keyARN(DELIVERY_STREAM_KEY_ARN)
+        .keyType(KeyType.CUSTOMER_MANAGED_CMK.toString())
+        .build();
+
+    public final static DeliveryStreamEncryptionConfigurationInput DELIVERY_STREAM_ENCRYPTION_CONFIGURATION_INPUT_AWS_OWNED_CMK =  DeliveryStreamEncryptionConfigurationInput.builder()
+        .keyType(KeyType.AWS_OWNED_CMK.toString())
+        .build();
+
+    public final static List<Tag> CFN_MODEL_TAGS =  HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(HandlerUtils.generateNFirehoseTags(5, 3));
+
+    public final static Map<String, String> CFN_MODEL_TAGS_IN_MAP = CFN_MODEL_TAGS.stream().collect(
+        Collectors.toMap(Tag::getKey, Tag::getValue));
+
+    public final static List<Tag> PREVIOUS_CFN_MODEL_TAGS =  HandlerUtils.translateFirehoseSDKTagsToCfnModelTags(HandlerUtils.generateNFirehoseTags(5, 6));
+
+    public final static Map<String, String> PREVIOUS_CFN_MODEL_TAGS_IN_MAP = PREVIOUS_CFN_MODEL_TAGS.stream().collect(
+        Collectors.toMap(Tag::getKey, Tag::getValue));
+
+    public final static List<software.amazon.awssdk.services.firehose.model.Tag> EXISTING_FIREHOSE_RESPONSE_TAGS = HandlerUtils.generateNFirehoseTags(5, 6);
 }

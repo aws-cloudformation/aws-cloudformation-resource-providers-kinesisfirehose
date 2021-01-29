@@ -463,7 +463,7 @@ public class DeleteHandlerTest {
                 = handler.handleRequest(proxy, request, context, logger);
 
         assertThat(response).isNotNull();
-        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
+        assertThat(response.getResourceModel()).isNull();
         assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
         assertThat(response.getResourceModels()).isNull();
         assertThat(response.getMessage()).isNull();
