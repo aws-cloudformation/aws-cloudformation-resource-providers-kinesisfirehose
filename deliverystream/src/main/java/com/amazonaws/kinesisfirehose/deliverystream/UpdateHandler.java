@@ -21,7 +21,7 @@ import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 
 public class UpdateHandler extends BaseHandler<CallbackContext> {
 
-    private FirehoseAPIWrapper firehoseAPIWrapper;
+    private final FirehoseClient firehoseClient = FirehoseClient.create();
     static final int NUMBER_OF_STATUS_POLL_RETRIES = 20;
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream Update handler to stabilize";
     static final String ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT = "Unable to %s delivery stream encryption";
@@ -38,29 +38,34 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
 
         final ResourceModel model = request.getDesiredResourceState();
         final ResourceModel previousModel = request.getPreviousResourceState();
-        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create()).clientProxy(proxy).build();
+        val firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(firehoseClient).clientProxy(proxy).build();
         logger.log(String.format("Update Handler called with deliveryStream PrimaryId %s", model.getDeliveryStreamName()));
         val currentContext = callbackContext != null
             ? callbackContext : CallbackContext.builder()
             .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
             .build();
 
-        List<Tag> previousResourceAndStackTags = new ArrayList<Tag>();
+        val previousResourceAndStackTags = new ArrayList<Tag>();
         if (request.getPreviousResourceTags() != null && !request.getPreviousResourceTags().isEmpty()) {
             request.getPreviousResourceTags().forEach((k,v) -> previousResourceAndStackTags.add(new Tag(k, v)));
             logger.log(String.format("Received %d Previous Resource tags on update for delivery stream name %s", previousResourceAndStackTags.size(), model.getDeliveryStreamName()));
         }
 
-        List<Tag> currentResourceAndStackTags = new ArrayList<Tag>();
+        val currentResourceAndStackTags = new ArrayList<Tag>();
         if (request.getDesiredResourceTags() != null && !request.getDesiredResourceTags().isEmpty()) {
             request.getDesiredResourceTags().forEach((k,v) -> currentResourceAndStackTags.add(new Tag(k, v)));
             logger.log(String.format("Received %d current Resource tags on update for delivery stream name %s", previousResourceAndStackTags.size(), model.getDeliveryStreamName()));
         }
-        return updateDeliveryStreamAndUpdateProgress(model, previousModel, currentContext, logger, previousResourceAndStackTags, currentResourceAndStackTags);
+        return updateDeliveryStreamAndUpdateProgress(firehoseAPIWrapper, model, previousModel, currentContext, logger, previousResourceAndStackTags, currentResourceAndStackTags);
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> updateDeliveryStreamAndUpdateProgress(
-        ResourceModel model, ResourceModel previousModel,  CallbackContext callbackContext, final Logger logger, List<Tag> previousResourceAndStackTags, List<Tag> currentResourceAndStackTags) {
+    private ProgressEvent<ResourceModel, CallbackContext> updateDeliveryStreamAndUpdateProgress(final FirehoseAPIWrapper firehoseAPIWrapper,
+                                                                                                final ResourceModel model,
+                                                                                                final ResourceModel previousModel,
+                                                                                                final CallbackContext callbackContext,
+                                                                                                final Logger logger,
+                                                                                                final List<Tag> previousResourceAndStackTags,
+                                                                                                final List<Tag> currentResourceAndStackTags) {
         val deliveryStreamEncryptionStatus = callbackContext.getDeliveryStreamEncryptionStatus();
         if (callbackContext.getStabilizationRetriesRemaining() == 0) {
             throw new RuntimeException(TIMED_OUT_MESSAGE);
@@ -109,7 +114,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         }
 
         try {
-            updateDestination(model, describeDeliveryStreamResp);
+            updateDestination(firehoseAPIWrapper, model, describeDeliveryStreamResp);
         }catch (final Exception e) {
             logger.log(String.format("UpdateDeliveryStream failed with exception %s", e.getMessage()));
             return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.UPDATE));
@@ -118,14 +123,14 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         EncryptionAction encryptionAction = getEncryptionActionToPerform(
             model, describeDeliveryStreamResp);
         try {
-            updateEncryptionOnDeliveryStream(model, encryptionAction, logger);
+            updateEncryptionOnDeliveryStream(firehoseAPIWrapper,model, encryptionAction, logger);
         }catch (final Exception e) {
             logger.log(String.format("updateEncryptionOnDeliveryStream failed with exception %s", e.getMessage()));
             return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.UPDATE));
         }
 
         try {
-            updateTagsOnDeliveryStream(model, previousModel, logger, previousResourceAndStackTags, currentResourceAndStackTags);
+            updateTagsOnDeliveryStream(firehoseAPIWrapper, model, previousModel, logger, previousResourceAndStackTags, currentResourceAndStackTags);
         } catch (final Exception e) {
             logger.log(String
                 .format("updateTagsOnDeliveryStream failed with exception %s", e.getMessage()));
@@ -149,15 +154,14 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
             model);
     }
 
-    private String getErrorMessageFromEncryptionStatus(String deliveryStreamEncryptionStatus) {
+    private String getErrorMessageFromEncryptionStatus(final String deliveryStreamEncryptionStatus) {
         if (DeliveryStreamEncryptionStatus.ENABLING_FAILED.toString().equals(deliveryStreamEncryptionStatus)) {
             return String.format(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "start");
         }
         return String.format(ERROR_DELIVERY_STREAM_ENCRYPTION_FORMAT, "stop");
     }
 
-    private EncryptionAction getEncryptionActionToPerform(ResourceModel model,
-        DescribeDeliveryStreamResponse describeResponse) {
+    private EncryptionAction getEncryptionActionToPerform(final ResourceModel model, final DescribeDeliveryStreamResponse describeResponse) {
         EncryptionAction encryptionAction = EncryptionAction.DO_NOTHING;
         val modelDSEncryptionConfig = model.getDeliveryStreamEncryptionConfigurationInput();
         val existingDSEncryptionConfig = describeResponse.deliveryStreamDescription().deliveryStreamEncryptionConfiguration();
@@ -175,7 +179,8 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
 
     // Basically tries to make sure that we don't try to start encryption in cases of AWS_OWNED_CMK -> AWS_OWNED_CMK or CUSTOMER_MANAGED_CMK(Key1) -> CUSTOMER_MANAGED_CMK(Key1)
     // as the firehose backend fails in those cases.
-    private boolean areEncryptionParametersUnchanged(DeliveryStreamEncryptionConfigurationInput modelDSEncryptionConfig, DeliveryStreamEncryptionConfiguration existingDSEncryptionConfig){
+    private boolean areEncryptionParametersUnchanged(final DeliveryStreamEncryptionConfigurationInput modelDSEncryptionConfig,
+                                                     final DeliveryStreamEncryptionConfiguration existingDSEncryptionConfig){
         return existingDSEncryptionConfig != null
             && ((KeyType.CUSTOMER_MANAGED_CMK.toString().equals(modelDSEncryptionConfig.getKeyType())
                 && (existingDSEncryptionConfig.keyType() != null && KeyType.CUSTOMER_MANAGED_CMK
@@ -206,8 +211,10 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
     }
 
 
-    private void updateEncryptionOnDeliveryStream(
-        final ResourceModel model, EncryptionAction encryptionAction, final Logger logger) {
+    private void updateEncryptionOnDeliveryStream(final FirehoseAPIWrapper firehoseAPIWrapper,
+                                                  final ResourceModel model,
+                                                  final EncryptionAction encryptionAction,
+                                                  final Logger logger) {
         switch (encryptionAction) {
             case START:
                 logger.log(String.format("Starting delivery stream encryption for the delivery stream name %s", model.getDeliveryStreamName()));
@@ -222,8 +229,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         }
     }
 
-    private void updateDestination(
-        ResourceModel model, DescribeDeliveryStreamResponse describeResponse) {
+    private void updateDestination(final FirehoseAPIWrapper firehoseAPIWrapper, final ResourceModel model, final DescribeDeliveryStreamResponse describeResponse) {
         val updateDestinationRequest = UpdateDestinationRequest.builder()
             .deliveryStreamName(model.getDeliveryStreamName())
             .currentDeliveryStreamVersionId(describeResponse.deliveryStreamDescription().versionId())
@@ -238,8 +244,12 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         firehoseAPIWrapper.updateDestination(updateDestinationRequest);
     }
 
-    private void updateTagsOnDeliveryStream(ResourceModel model, ResourceModel previousModel,
-         Logger logger, List<Tag> previousResourceAndStackTags, List<Tag> currentResourceAndStackTags) {
+    private void updateTagsOnDeliveryStream(final FirehoseAPIWrapper firehoseAPIWrapper,
+                                            final ResourceModel model,
+                                            final ResourceModel previousModel,
+                                            final Logger logger,
+                                            final List<Tag> previousResourceAndStackTags,
+                                            final List<Tag> currentResourceAndStackTags) {
         val tagKeysToRemove = HandlerUtils.tagsInFirstListButNotInSecond(previousResourceAndStackTags, currentResourceAndStackTags);
         if (tagKeysToRemove != null && !tagKeysToRemove.isEmpty()) {
             boolean wasExceptionThrown = false;
@@ -288,7 +298,7 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         }
     }
 
-    private boolean customerDidNotSpecifiedModelTags(ResourceModel previousModel, ResourceModel model) {
+    private boolean customerDidNotSpecifiedModelTags(final ResourceModel previousModel, final ResourceModel model) {
         return (previousModel.getTags() == null || previousModel.getTags().isEmpty()) && (model.getTags() == null || model.getTags().isEmpty());
     }
 

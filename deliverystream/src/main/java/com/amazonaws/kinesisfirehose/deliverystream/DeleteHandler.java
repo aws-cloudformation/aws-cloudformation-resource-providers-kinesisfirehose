@@ -15,7 +15,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
     static final String DELIVERY_STREAM_DELETED = "Delivery Stream Deleted";
     static final String TIMED_OUT_MESSAGE = "Timed out waiting for the delivery stream to get DELETED.";
     private static final int CALLBACK_DELAY_IN_SECONDS = 30;
-    private FirehoseAPIWrapper firehoseAPIWrapper;
+    private final FirehoseClient firehoseClient = FirehoseClient.create();
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
@@ -25,7 +25,7 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
         final Logger logger) {
 
         final ResourceModel model = request.getDesiredResourceState();
-        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create()).clientProxy(proxy).build();
+        val firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(firehoseClient).clientProxy(proxy).build();
 
         logger.log(String.format("Delete Handler called with deliveryStream PrimaryId %s", model.getDeliveryStreamName()));
 
@@ -44,10 +44,11 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
         }
 
         // This Lambda will continually be re-invoked with the current state of the instance, finally succeeding when state stabilizes.
-        return deleteDeliveryStreamAndUpdateProgress(model, currentContext, logger);
+        return deleteDeliveryStreamAndUpdateProgress(firehoseAPIWrapper, model, currentContext, logger);
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> deleteDeliveryStreamAndUpdateProgress(final ResourceModel model,
+    private ProgressEvent<ResourceModel, CallbackContext> deleteDeliveryStreamAndUpdateProgress(final FirehoseAPIWrapper firehoseAPIWrapper,
+                                                                                                final ResourceModel model,
                                                                                                 final CallbackContext callbackContext,
                                                                                                 final Logger logger) {
         val deliveryStreamStatus = callbackContext.getDeliveryStreamStatus();

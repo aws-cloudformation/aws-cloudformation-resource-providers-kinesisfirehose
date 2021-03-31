@@ -12,10 +12,11 @@ import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
+import lombok.val;
 
 public class ReadHandler extends BaseHandler<CallbackContext> {
 
-    private FirehoseAPIWrapper firehoseAPIWrapper;
+    private final FirehoseClient firehoseClient = FirehoseClient.create();
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
@@ -23,7 +24,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
             final ResourceHandlerRequest<ResourceModel> request,
             final CallbackContext callbackContext,
             final Logger logger) {
-        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create()).clientProxy(proxy).build();
+        val firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(firehoseClient).clientProxy(proxy).build();
         final ResourceModel model = request.getDesiredResourceState();
         logger.log(String.format("Read Handler called with id %s.", model.getDeliveryStreamName()));
         DeliveryStreamDescription deliveryStreamDescription = null;
