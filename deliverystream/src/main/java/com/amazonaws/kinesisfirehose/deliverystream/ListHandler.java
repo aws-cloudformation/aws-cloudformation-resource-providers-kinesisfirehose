@@ -16,8 +16,7 @@ import lombok.val;
 
 public class ListHandler extends BaseHandler<CallbackContext> {
     static final int LIST_RESULT_LIMIT = 50;
-
-    private FirehoseAPIWrapper firehoseAPIWrapper;
+    private final FirehoseClient firehoseClient = FirehoseClient.create();
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
@@ -26,7 +25,7 @@ public class ListHandler extends BaseHandler<CallbackContext> {
             final CallbackContext callbackContext,
             final Logger logger) {
 
-        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create())
+        val firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(firehoseClient)
             .clientProxy(proxy)
             .build();
         List<ResourceModel> models = new ArrayList<>();

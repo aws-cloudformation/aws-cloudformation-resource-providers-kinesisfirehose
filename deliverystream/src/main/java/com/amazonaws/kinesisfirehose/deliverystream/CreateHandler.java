@@ -26,7 +26,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
     static final String CREATE_DELIVERY_STREAM_ERROR_MSG_FORMAT = "Unable to Create Delivery Stream. Delivery stream status is %s";
 
     private static final int CALLBACK_DELAY_IN_SECONDS = 30;
-    private FirehoseAPIWrapper firehoseAPIWrapper;
+    private final FirehoseClient firehoseClient = FirehoseClient.create();
 
     @Override
     public ProgressEvent<ResourceModel, CallbackContext> handleRequest(
@@ -36,7 +36,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         final Logger logger) {
 
         final ResourceModel model = request.getDesiredResourceState();
-        firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(FirehoseClient.create())
+        val firehoseAPIWrapper = FirehoseAPIWrapper.builder().firehoseClient(firehoseClient)
             .clientProxy(proxy)
             .build();
         logger.log(String.format("Create Handler called with deliveryStreamName %s", model.getDeliveryStreamName()));
@@ -66,10 +66,11 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
             model.setTags(modelTags);
         }
         // This Lambda will continually be re-invoked with the current state of the instance, finally succeeding when state stabilizes.
-        return createDeliveryStreamAndUpdateProgress(model, currentContext, logger);
+        return createDeliveryStreamAndUpdateProgress(firehoseAPIWrapper, model, currentContext, logger);
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStreamAndUpdateProgress(final ResourceModel model,
+    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStreamAndUpdateProgress(final FirehoseAPIWrapper firehoseAPIWrapper,
+                                                                                                final ResourceModel model,
                                                                                                 final CallbackContext callbackContext,
                                                                                                 final Logger logger) {
         val deliveryStreamStatus = callbackContext.getDeliveryStreamStatus();
@@ -86,7 +87,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 logger.log(String.format("Delivery Stream Encryption would be enabled on the delivery stream name %s", model.getDeliveryStreamName()));
             }
             try {
-                return createDeliveryStream(model);
+                return createDeliveryStream(firehoseAPIWrapper, model);
             } catch (final Exception e) {
                 logger.log(String.format("createDeliveryStream failed with exception %s", e.getMessage()));
                 return ProgressEvent.defaultFailureHandler(e, ExceptionMapper.mapToHandlerErrorCode(e, HandlerType.CREATE));
@@ -96,7 +97,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
             // retry stabilizing if more attempts are remaining.
             String currentDeliveryStreamStatus = "";
             try {
-                currentDeliveryStreamStatus = getDeliveryStreamStatus(model.getDeliveryStreamName());
+                currentDeliveryStreamStatus = getDeliveryStreamStatus(firehoseAPIWrapper,model.getDeliveryStreamName());
             } catch (final Exception e) {
                 logger.log(String.format("Error getting Delivery Stream Status. Exception %s", e.getMessage()));
             }
@@ -120,7 +121,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         }
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStream(final ResourceModel model) {
+    private ProgressEvent<ResourceModel, CallbackContext> createDeliveryStream(final FirehoseAPIWrapper firehoseAPIWrapper, final ResourceModel model) {
         val createDeliveryStreamRequest = CreateDeliveryStreamRequest.builder()
                 .deliveryStreamName(model.getDeliveryStreamName())
                 .deliveryStreamType(model.getDeliveryStreamType())
@@ -140,14 +141,14 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         val response = firehoseAPIWrapper.createDeliveryStream(createDeliveryStreamRequest);
         model.setArn(response.deliveryStreamARN());
         return ProgressEvent.defaultInProgressHandler(CallbackContext.builder()
-                .deliveryStreamStatus(getDeliveryStreamStatus(model.getDeliveryStreamName()))
+                .deliveryStreamStatus(getDeliveryStreamStatus(firehoseAPIWrapper, model.getDeliveryStreamName()))
                 .stabilizationRetriesRemaining(NUMBER_OF_STATUS_POLL_RETRIES)
                 .build(),
                 (int) Duration.ofSeconds(CALLBACK_DELAY_IN_SECONDS).getSeconds(),
                 model);
     }
 
-    private String getDeliveryStreamStatus(final String deliveryStreamName) {
+    private String getDeliveryStreamStatus(final FirehoseAPIWrapper firehoseAPIWrapper, final String deliveryStreamName) {
         return firehoseAPIWrapper.describeDeliveryStream(deliveryStreamName).deliveryStreamDescription().deliveryStreamStatusAsString();
     }
 
