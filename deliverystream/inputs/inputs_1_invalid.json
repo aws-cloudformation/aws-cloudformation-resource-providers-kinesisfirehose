@@ -3,10 +3,14 @@
   "DeliveryStreamName": "test123",
   "DeliveryStreamType": "DirectPut",
   "ExtendedS3DestinationConfiguration": {
-    "BucketARN": {"Ref": "ContractTestS3BucketArn"},
+    "BucketARN": {
+      "Ref": "ContractTestS3BucketArn"
+    },
     "ErrorOutputPrefix": "",
-    "RoleARN": {"Ref": "ContractTestDeliveryRoleArn"},
-    "EncryptionConfiguration" : {
+    "RoleARN": {
+      "Ref": "ContractTestDeliveryRoleArn"
+    },
+    "EncryptionConfiguration": {
       "KMSEncryptionConfig": {
         "AWSKMSKeyARN": "arn:aws:kms:::NON_EXISTENT_KMS_KEY_ARN_FOR_KMS_EXCEPTION"
       },
