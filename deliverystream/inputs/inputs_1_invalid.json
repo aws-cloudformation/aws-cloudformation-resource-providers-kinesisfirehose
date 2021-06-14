@@ -1,10 +1,20 @@
 {
   "Arn": "Invalid_ARN",
-  "DeliveryStreamName": "delivery_stream_name",
-  "DeliveryStreamType": "delivery_stream_type",
+  "DeliveryStreamName": "test123",
+  "DeliveryStreamType": "DirectPut",
   "ExtendedS3DestinationConfiguration": {
-    "BucketARN": "bucket_arn",
+    "BucketARN": {
+      "Ref": "ContractTestS3BucketArn"
+    },
     "ErrorOutputPrefix": "",
-    "RoleARN": "role_arn"
+    "RoleARN": {
+      "Ref": "ContractTestDeliveryRoleArn"
+    },
+    "EncryptionConfiguration": {
+      "KMSEncryptionConfig": {
+        "AWSKMSKeyARN": "arn:aws:kms:::NON_EXISTENT_KMS_KEY_ARN_FOR_KMS_EXCEPTION"
+      },
+      "NoEncryptionConfig": "NoEncryption"
+    }
   }
 }

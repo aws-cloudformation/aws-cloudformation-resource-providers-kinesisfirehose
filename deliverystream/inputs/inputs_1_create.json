@@ -1,9 +1,13 @@
 {
-  "DeliveryStreamName": "delivery_stream_name",
-  "DeliveryStreamType": "stream_type",
+  "DeliveryStreamName": "test123",
+  "DeliveryStreamType": "DirectPut",
   "ExtendedS3DestinationConfiguration": {
-    "BucketARN": "bucket_arn",
+    "BucketARN": {
+      "Ref": "ContractTestS3BucketArn"
+    },
     "ErrorOutputPrefix": "error_prefix",
-    "RoleARN": "role_arn"
+    "RoleARN": {
+      "Ref": "ContractTestDeliveryRoleArn"
+    }
   }
 }
